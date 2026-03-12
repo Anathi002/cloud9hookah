@@ -17,6 +17,7 @@
 - `WHATSAPP_PHONE_NUMBER_ID`
 - `BUSINESS_NOTIFICATION_NUMBER`
 - `DATABASE_URL`
+- `CHECKOUT_ENABLED` (`false` for pre-launch engagement mode, `true` for full checkout)
 
 ## 3. Backend Local Run
 ```bash
@@ -34,6 +35,7 @@ npm install
 npm run dev
 ```
 Set `VITE_API_BASE_URL=http://localhost:4000`.
+Set `VITE_CHECKOUT_ENABLED=false` for pre-launch mode (booking only).
 
 ## 5. Payfast Callback URLs
 Configure in Payfast merchant dashboard:
@@ -54,6 +56,14 @@ Configure in Payfast merchant dashboard:
 - Ensure public HTTPS URL is available for Payfast ITN
 
 ## 8. Production Switch
+Pre-launch engagement mode:
+- `CHECKOUT_ENABLED=false` (backend)
+- `VITE_CHECKOUT_ENABLED=false` (frontend)
+- Run migrations so booking/engagement tables exist
+
+Full checkout launch mode:
+- Set `CHECKOUT_ENABLED=true`
+- Set `VITE_CHECKOUT_ENABLED=true`
 - Set `PAYFAST_SANDBOX=false`
 - Use live merchant credentials
 - Ensure `PAYFAST_PROCESS_URL` points to live process URL (or leave unset for default)

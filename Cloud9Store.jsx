@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 
 const IMG_CAR = "./IMG_CAR.png";
 const IMAGE_BG = "./IMAGE_BG.png";
@@ -8,7 +8,7 @@ const SINGLE_PIPE_LOCAL_IMAGE = "./IMG_SINGLE.png";
 const PRODUCTS = [
   { id:1, name:"Single Pipe",  tag:"SINGLE",   img:SINGLE_PIPE_LOCAL_IMAGE, fallbackImg:IMG_DOUBLE, hoses:1, rentalPer4h:200, deposit:900,  desc:"Solo sessions & intimate vibes" },
   { id:2, name:"Double Pipe",  tag:"POPULAR",  img:IMG_DOUBLE, hoses:2, rentalPer4h:380, deposit:1500, desc:"Share the moment with a friend" },
-  { id:3, name:"Car Hubbly",   tag:"NEW",     img:IMG_CAR,    hoses:1, rentalPer4h:100, deposit:300,  desc:"Smoke safely in your car" },
+  { id:3, name:"Car Hubbly",   tag:"NEW",     img:IMG_CAR,    hoses:1, rentalPer4h:150, deposit:300,  desc:"Smoke safely in your car" },
 ];
 
 const COMBO_PACKAGES = [
@@ -79,7 +79,7 @@ const SI = {
 const CONTACT_EMAIL = "cloud.hubbly@gmail.com";
 const WA_LINK = "https://wa.me/27749428500";
 const POLICY_ITEMS = [
-  { kind:"rental", title:"Rental Fee", text:"Car Hubbly R100 | Single R200 | Double R380 (per 4h)." },
+  { kind:"rental", title:"Rental Fee", text:"Car Hubbly R150 | Single R200 | Double R380 (per 4h)." },
   { kind:"deposit", title:"Deposit", text:"Car Hubbly R300 | Single R900 | Double R1,500. Fully refundable." },
   { kind:"refund", title:"Instant Refund", text:"Return undamaged -> full deposit is refunded immediately." },
   { kind:"damage", title:"Damage", text:"Damage or missing parts are deducted from the deposit." },
@@ -253,6 +253,7 @@ export default function App() {
   const [paying,setPaying]=useState(false);
   const [paymentState,setPaymentState]=useState("");
   const [paidOrderNumber,setPaidOrderNumber]=useState("");
+  const [bookingSubmitting,setBookingSubmitting]=useState(false);
   const [form,setForm]=useState({name:"",phone:"",email:"",address:"",suburb:"",notes:""});
   const [toast,setToast]=useState("");
   const [heroBtnHover,setHeroBtnHover]=useState("");
@@ -263,14 +264,21 @@ export default function App() {
   const [comboFlavours,setComboFlavours]=useState([]);
   const [comboHours,setComboHours]=useState(COMBO_MIN_HOURS);
   const [comboWeed,setComboWeed]=useState(false);
+  const [cartHourEditor,setCartHourEditor]=useState(null);
+  const [homeTopBarDark,setHomeTopBarDark]=useState(true);
   const toastTm=useRef(null);
   const mainRef=useRef(null);
+  const heroRef=useRef(null);
   const shopRef=useRef(null);
   const combosRef=useRef(null);
   const policyRef=useRef(null);
   const aboutRef=useRef(null);
   const contactRef=useRef(null);
   const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:4000").replace(/\/+$/,"");
+  const checkoutEnabled = String(import.meta.env.VITE_CHECKOUT_ENABLED || "false").toLowerCase() === "true";
+  const engagementEnabled = String(import.meta.env.VITE_ENGAGEMENT_ENABLED || "true").toLowerCase() === "true";
+  const prelaunchSource = String(import.meta.env.VITE_PRELAUNCH_SOURCE || "ads-prelaunch");
+  const sessionIdRef = useRef("");
 
   const cartRental=cart.reduce((s,i)=>s+i.rentalCost,0);
   const cartDeposit=cart.reduce((s,i)=>s+i.deposit,0);
@@ -284,9 +292,114 @@ export default function App() {
   const activeComboRental = activeComboBaseRental + activeComboAddOn;
   const activeComboDeposit = activeCombo ? activeCombo.pipes * doublePipeDeposit : 0;
   const activeComboTotal = activeComboRental + activeComboDeposit;
+  const roundMoney = (value) => Number(Number(value).toFixed(2));
 
   function toast_(msg){ setToast(msg); clearTimeout(toastTm.current); toastTm.current=setTimeout(()=>setToast(""),2000); }
-  function addToCart(p,hours,rentalCost,totalNow){ setCart(b=>[...b,{...p,hours,rentalCost,totalNow}]); toast_(`${p.name} added!`); }
+  function addToCart(p,hours,rentalCost){
+    const unitRentalCost = roundMoney(rentalCost);
+    const unitDeposit = roundMoney(Number(p.deposit || 0));
+    const quantity = 1;
+    const nextRental = roundMoney(unitRentalCost * quantity);
+    const nextDeposit = roundMoney(unitDeposit * quantity);
+    setCart(b=>[...b,{
+      ...p,
+      hours,
+      quantity,
+      unitRentalCost,
+      unitDeposit,
+      rentalCost: nextRental,
+      deposit: nextDeposit,
+      totalNow: roundMoney(nextRental + nextDeposit),
+    }]);
+    toast_(`${p.name} added!`);
+    trackEvent("add_to_cart",{ productName: p.name, hours, cartSize: cart.length + 1 });
+  }
+  function removeCartItem(index){
+    const removed = cart[index];
+    setCart(c=>c.filter((_,idx)=>idx!==index));
+    setCartHourEditor(null);
+    if(removed){
+      trackEvent("remove_from_cart",{ productName: removed.name });
+    }
+  }
+  function changeCartQuantity(index,delta){
+    setCart(current=>current.map((item,idx)=>{
+      if(idx!==index) return item;
+      const currentQty = Math.max(1, Number(item.quantity || 1));
+      const nextQty = Math.max(1, currentQty + delta);
+      const unitRentalCost = roundMoney(Number(item.unitRentalCost ?? item.rentalCost ?? 0));
+      const unitDeposit = roundMoney(Number(item.unitDeposit ?? item.deposit ?? 0));
+      const rentalCost = roundMoney(unitRentalCost * nextQty);
+      const deposit = roundMoney(unitDeposit * nextQty);
+      return {
+        ...item,
+        quantity: nextQty,
+        unitRentalCost,
+        unitDeposit,
+        rentalCost,
+        deposit,
+        totalNow: roundMoney(rentalCost + deposit),
+      };
+    }));
+  }
+  function calcUnitRentalCostForHours(item,nextHours){
+    if (item.isCombo) {
+      const addOn = item.weedBag ? comboAddOnPrice : 0;
+      const currentHours = Math.max(COMBO_MIN_HOURS, Number(item.hours || COMBO_MIN_HOURS));
+      const fallbackBase = (Number(item.unitRentalCost || 0) - addOn) * (COMBO_MIN_HOURS / currentHours);
+      const comboBasePrice = Number(item.comboBasePrice || fallbackBase || 0);
+      return roundMoney((comboBasePrice * (nextHours / COMBO_MIN_HOURS)) + addOn);
+    }
+    const currentHours = Math.max(4, Number(item.hours || 4));
+    const fallbackRate = (Number(item.unitRentalCost || 0) * 4) / currentHours;
+    const rentalPer4h = Number(item.rentalPer4h || fallbackRate || 0);
+    return roundMoney(rentalPer4h * (nextHours / 4));
+  }
+  function openCartHoursEditor(index){
+    const item = cart[index];
+    if (!item) return;
+    const min = item.isCombo ? COMBO_MIN_HOURS : 4;
+    const step = item.isCombo ? COMBO_HOURS_STEP : 4;
+    setCartHourEditor({
+      index,
+      min,
+      step,
+      hours: Math.max(min, Number(item.hours || min)),
+      name: item.name,
+    });
+  }
+  function changeCartHourDraft(delta){
+    setCartHourEditor(curr=>{
+      if (!curr) return curr;
+      return {
+        ...curr,
+        hours: Math.max(curr.min, Number(curr.hours || curr.min) + delta),
+      };
+    });
+  }
+  function applyCartHourDraft(){
+    if (!cartHourEditor) return;
+    const { index, hours } = cartHourEditor;
+    setCart(current=>current.map((item,idx)=>{
+      if(idx!==index) return item;
+      const quantity = Math.max(1, Number(item.quantity || 1));
+      const unitRentalCost = calcUnitRentalCostForHours(item, hours);
+      const unitDeposit = roundMoney(Number(item.unitDeposit ?? item.deposit ?? 0));
+      const rentalCost = roundMoney(unitRentalCost * quantity);
+      const deposit = roundMoney(unitDeposit * quantity);
+      return {
+        ...item,
+        hours,
+        unitRentalCost,
+        unitDeposit,
+        rentalCost,
+        deposit,
+        totalNow: roundMoney(rentalCost + deposit),
+      };
+    }));
+    setCartHourEditor(null);
+    toast_("Rental hours updated.");
+  }
   function openProduct(p){ setActiveProduct(p); setActiveHours(4); }
   function openCombo(combo){
     setActiveCombo(combo);
@@ -329,17 +442,132 @@ export default function App() {
       flavour:flavourLabel,
       flavours:selectedFlavours,
       weedBag:comboWeed,
+      comboBasePrice:activeCombo.basePrice,
+      quantity:1,
+      unitRentalCost:rentalCost,
+      unitDeposit:deposit,
       hours:comboHours,
       rentalCost,
       deposit,
       totalNow,
     }]);
     toast_(`${activeCombo.title} added!`);
+    trackEvent("add_to_cart",{ productName: activeCombo.title, hours: comboHours, isCombo: true });
     setActiveCombo(null);
   }
   function goSection(ref){ setMenuOpen(false); setTimeout(()=>{ setPage("home"); setTimeout(()=>ref?.current?.scrollIntoView({behavior:"smooth",block:"start"}),80); },300); }
   const upd=(k,v)=>setForm(f=>({...f,[k]:v}));
   const updContact=(k,v)=>setContactForm(f=>({...f,[k]:v}));
+  function getSessionId(){
+    if(sessionIdRef.current) return sessionIdRef.current;
+    try {
+      const existing = localStorage.getItem("cloud9_session_id");
+      if(existing){
+        sessionIdRef.current = existing;
+        return existing;
+      }
+      const created = `sess_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,10)}`;
+      localStorage.setItem("cloud9_session_id", created);
+      sessionIdRef.current = created;
+      return created;
+    } catch {
+      const fallback = `sess_${Date.now().toString(36)}`;
+      sessionIdRef.current = fallback;
+      return fallback;
+    }
+  }
+
+  function trackEvent(eventName, meta={}){
+    if(!engagementEnabled) return;
+    const payload = {
+      sessionId: getSessionId(),
+      eventName,
+      page,
+      meta,
+    };
+    fetch(`${apiBaseUrl}/engagement/event`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify(payload),
+      keepalive:true,
+    }).catch(()=>{});
+  }
+
+  function buildCheckoutItems(){
+    return cart.map(item=>{
+      const quantity = Math.max(1, Number(item.quantity || 1));
+      const unitTotal = roundMoney(Number(item.totalNow || 0) / quantity);
+      return {
+        product_name: item.name,
+        quantity,
+        hours: Number(item.hours || 0),
+        price: unitTotal,
+        totalNow: roundMoney(unitTotal * quantity),
+      };
+    });
+  }
+
+  function submitBookingRequest(){
+    if(!form.name || !form.phone || !form.address){
+      alert("Please fill Name, Phone & Address.");
+      setStep(1);
+      return;
+    }
+    if(cart.length===0){
+      alert("Your cart is empty.");
+      return;
+    }
+
+    const items = buildCheckoutItems();
+    const currentTotal = cartTotal;
+    setBookingSubmitting(true);
+
+    fetch(`${apiBaseUrl}/book-now`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({
+        customer:{
+          name:form.name,
+          phone:form.phone,
+          email:form.email || "",
+          address:form.address,
+          suburb:form.suburb || "",
+          notes:form.notes || "",
+        },
+        items,
+        totalAmount: currentTotal,
+        source: prelaunchSource,
+      }),
+    })
+      .then(async res=>{
+        const data = await res.json().catch(()=>({}));
+        if(!res.ok){
+          throw new Error(data?.details || data?.error || "Could not submit booking request");
+        }
+        const reference = data.bookingReference || (data.bookingId ? `BK-${String(data.bookingId).padStart(5, "0")}` : "");
+        setPaidOrderNumber(reference);
+        setPaymentState("booking");
+        setStep(3);
+        setCart([]);
+        toast_("Booking request sent.");
+        trackEvent("booking_submitted",{ bookingReference: reference, total: currentTotal, cartItems: items.length });
+      })
+      .catch(err=>{
+        console.error("Booking request failed:", err);
+        const msg = String(err?.message || "");
+        if (/failed to fetch/i.test(msg)) {
+          alert(
+            `Could not reach booking server at ${apiBaseUrl}.\n` +
+            `Start backend and make sure CORS allows ${window.location.origin}.`
+          );
+        } else {
+          alert(msg || "Could not submit booking request.");
+        }
+      })
+      .finally(()=>{
+        setBookingSubmitting(false);
+      });
+  }
 
   function sendContactMessage(e){
     e.preventDefault();
@@ -366,6 +594,10 @@ export default function App() {
   }
 
   function startPayfastCheckout(){
+    if(!checkoutEnabled){
+      submitBookingRequest();
+      return;
+    }
     if(!form.name || !form.phone || !form.address){
       alert("Please fill Name, Phone & Address.");
       setStep(1);
@@ -378,11 +610,8 @@ export default function App() {
 
     setPaymentState("");
     setPaying(true);
-    const items = cart.map(item=>({
-      product_name: item.name,
-      quantity: 1,
-      price: Number(item.totalNow),
-    }));
+    const items = buildCheckoutItems();
+    trackEvent("checkout_payment_started",{ cartItems: items.length, total: cartTotal });
 
     fetch(`${apiBaseUrl}/create-order`,{
       method:"POST",
@@ -442,6 +671,28 @@ export default function App() {
   }
 
   useEffect(()=>{
+    const sessionId = getSessionId();
+    trackEvent("session_started",{
+      sessionId,
+      path: window.location.pathname,
+      checkoutEnabled,
+    });
+  },[]);
+
+  useEffect(()=>{
+    trackEvent("page_view",{ page });
+  },[page]);
+
+  useEffect(()=>{
+    if(page==="checkout" && step===2){
+      trackEvent(checkoutEnabled ? "payment_step_viewed" : "booking_step_viewed",{
+        cartItems: cart.length,
+        total: cartTotal,
+      });
+    }
+  },[page,step,checkoutEnabled,cart.length,cartTotal]);
+
+  useEffect(()=>{
     const params = new URLSearchParams(window.location.search);
     const payment = params.get("payment");
     const orderNo = params.get("order_number") || "";
@@ -472,16 +723,37 @@ export default function App() {
     }
   },[]);
 
+  useEffect(()=>{
+    if(page!=="home"){
+      setHomeTopBarDark(false);
+      return;
+    }
+    const scroller = mainRef.current;
+    if(!scroller) return;
+    const updateTopBarTone = ()=>{
+      const heroHeight = heroRef.current?.offsetHeight || 680;
+      const cutoff = Math.max(140, heroHeight - 170);
+      setHomeTopBarDark(scroller.scrollTop < cutoff);
+    };
+    updateTopBarTone();
+    scroller.addEventListener("scroll", updateTopBarTone, { passive:true });
+    window.addEventListener("resize", updateTopBarTone);
+    return ()=>{
+      scroller.removeEventListener("scroll", updateTopBarTone);
+      window.removeEventListener("resize", updateTopBarTone);
+    };
+  },[page]);
+
   const TopBar=({dark=false})=>(
-    <div style={{position:"absolute",top:52,left:0,right:0,height:48,
+    <div style={{position:"absolute",top:"calc(env(safe-area-inset-top, 0px) + 8px)",left:0,right:0,height:48,
       display:"grid",gridTemplateColumns:"48px 1fr 48px",
       alignItems:"center",paddingLeft:14,paddingRight:14,zIndex:40}}>
       <button onClick={()=>setMenuOpen(true)}
-        style={{width:36,height:36,background:dark?"rgba(255,255,255,.18)":"rgba(0,0,0,.07)",
+        style={{width:36,height:36,background:dark?"transparent":"rgba(0,0,0,.38)",
           border:"none",borderRadius:10,cursor:"pointer",
           display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4.5,
-          backdropFilter:"blur(8px)"}}>
-        {[0,1,2].map(i=><span key={i} style={{width:15,height:1.5,background:dark?"#fff":"#111",borderRadius:2,display:"block"}}/>)}
+          backdropFilter:dark?"none":"blur(8px)"}}>
+        {[0,1,2].map(i=><span key={i} style={{width:15,height:1.5,background:"#fff",borderRadius:2,display:"block"}}/>)}
       </button>
       <span style={{textAlign:"center",fontFamily:"Georgia,serif",fontWeight:900,
         fontSize:16,color:dark?"#fff":"#111",letterSpacing:".2em",userSelect:"none",cursor:"pointer"}}
@@ -489,12 +761,12 @@ export default function App() {
         CLOUD 9
       </span>
       <button onClick={()=>setPage("cart")}
-        style={{width:36,height:36,background:dark?"rgba(255,255,255,.18)":"rgba(0,0,0,.07)",
+        style={{width:36,height:36,background:dark?"transparent":"rgba(0,0,0,.38)",
           border:"none",borderRadius:10,cursor:"pointer",
           display:"flex",alignItems:"center",justifyContent:"center",
-          backdropFilter:"blur(8px)",position:"relative",justifySelf:"end"}}>
+          backdropFilter:dark?"none":"blur(8px)",position:"relative",justifySelf:"end"}}>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-          stroke={dark?"#fff":"#111"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
           <line x1="3" y1="6" x2="21" y2="6"/>
           <path d="M16 10a4 4 0 01-8 0"/>
@@ -503,17 +775,6 @@ export default function App() {
           color:"#fff",width:15,height:15,borderRadius:"50%",fontSize:8,fontWeight:900,
           display:"flex",alignItems:"center",justifyContent:"center"}}>{cart.length}</span>}
       </button>
-    </div>
-  );
-
-  const StatusBar=({dark=false})=>(
-    <div style={{position:"absolute",top:0,left:0,right:0,height:52,
-      display:"flex",justifyContent:"space-between",alignItems:"flex-end",
-      padding:"0 24px 6px",zIndex:50,pointerEvents:"none"}}>
-      <span style={{fontSize:12,fontWeight:700,color:dark?"#fff":"#111"}}>9:41</span>
-      <div style={{display:"flex",gap:4,alignItems:"center",fontSize:10,color:dark?"rgba(255,255,255,.7)":"#888"}}>
-        <span>●●●</span><span>WiFi</span><span>🔋</span>
-      </div>
     </div>
   );
 
@@ -543,28 +804,14 @@ export default function App() {
   });
 
   return (
-    <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",
+    <div style={{minHeight:"100dvh",
       background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)",
-      padding:"40px 16px",fontFamily:"-apple-system,BlinkMacSystemFont,sans-serif"}}>
+      fontFamily:"-apple-system,BlinkMacSystemFont,sans-serif"}}>
 
-      <div style={{position:"relative",width:393,flexShrink:0}}>
-        {/* Bezel */}
-        <div style={{position:"absolute",inset:-13,
-          background:"linear-gradient(145deg,#3c3c3c 0%,#1e1e1e 35%,#3c3c3c 65%,#1e1e1e 100%)",
-          borderRadius:60,zIndex:0,boxShadow:"0 0 0 1px rgba(255,255,255,.1),0 50px 140px rgba(0,0,0,.9)"}}/>
-        {[[108,30,true],[150,60,true],[220,60,true],[165,85,false]].map(([top,h,left],i)=>(
-          <div key={i} style={{position:"absolute",top,width:3,height:h,background:"#2e2e2e",zIndex:1,
-            ...(left?{left:-16,borderRadius:"2px 0 0 2px"}:{right:-16,borderRadius:"0 2px 2px 0"})}}/>
-        ))}
-
+      <div style={{position:"relative",width:"100%",minHeight:"100dvh"}}>
         {/* Screen */}
-        <div style={{position:"relative",zIndex:2,background:"#f2f2f2",borderRadius:48,
-          overflow:"hidden",height:852,boxShadow:"inset 0 0 0 1px rgba(0,0,0,.08)"}}>
-
-          {/* Dynamic Island */}
-          <div style={{position:"absolute",top:13,left:"50%",transform:"translateX(-50%)",
-            width:118,height:34,background:"#000",borderRadius:20,zIndex:200}}/>
-
+        <div style={{position:"relative",zIndex:2,background:"#f2f2f2",
+          overflow:"hidden",height:"100dvh",boxShadow:"inset 0 0 0 1px rgba(0,0,0,.08)"}}>
           {/* Toast */}
           <div style={{position:"absolute",bottom:24,left:"50%",zIndex:500,
             transform:`translateX(-50%) translateY(${toast?"0":"50px"})`,
@@ -575,18 +822,18 @@ export default function App() {
             {toast}
           </div>
 
-          {/* ══════════════════════════════════════ */}
-          {/* SIDE DRAWER MENU — overlays home page  */}
-          {/* ══════════════════════════════════════ */}
+          {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+          {/* SIDE DRAWER MENU â€” overlays home page  */}
+          {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
 
-          {/* Dim overlay — only covers the right part (not the drawer itself) */}
+          {/* Dim overlay â€” only covers the right part (not the drawer itself) */}
           <div onClick={()=>setMenuOpen(false)}
             style={{position:"absolute",inset:0,zIndex:149,
               background:"rgba(0,0,0,.45)",backdropFilter:"blur(2px)",
               opacity:menuOpen?1:0,pointerEvents:menuOpen?"all":"none",
               transition:"opacity .3s"}}/>
 
-          {/* Drawer panel — slides in from left, only 72% wide */}
+          {/* Drawer panel â€” slides in from left, only 72% wide */}
           <div style={{
             position:"absolute",top:0,left:0,bottom:0,
             width:"72%",
@@ -599,14 +846,16 @@ export default function App() {
             borderRight:"1px solid rgba(255,255,255,.07)",
           }}>
             {/* Drawer header */}
-            <div style={{padding:"60px 20px 20px",borderBottom:"1px solid rgba(255,255,255,.08)"}}>
+            <div style={{paddingTop:"calc(env(safe-area-inset-top, 0px) + 20px)",paddingRight:20,paddingBottom:20,paddingLeft:20,borderBottom:"1px solid rgba(255,255,255,.08)"}}>
               <span style={{fontFamily:"Georgia,serif",fontWeight:900,fontSize:18,
                 color:"#fff",letterSpacing:".18em"}}>CLOUD 9</span>
               <div style={{fontSize:9,letterSpacing:".3em",textTransform:"uppercase",
-                color:"rgba(255,255,255,.3)",marginTop:4}}>Cape Town · Hookah Rentals</div>
+                color:"rgba(255,255,255,.3)",marginTop:4}}>
+                {"Cape Town \u2022 Hookah Rentals"}
+              </div>
             </div>
 
-            {/* Nav items — no icons, white dividers */}
+            {/* Nav items â€” no icons, white dividers */}
             <div style={{flex:1,overflowY:"auto"}}>
               {navItems.map((item,i)=>(
                 <button key={item.label} onClick={()=>goSection(item.ref)}
@@ -621,13 +870,20 @@ export default function App() {
                   onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,.05)"}
                   onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                   {item.label}
-                  <span style={{color:"rgba(255,255,255,.2)",fontSize:18,fontWeight:300}}>›</span>
+                  <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:20,height:20}}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </span>
                 </button>
               ))}
             </div>
 
             {/* Socials at bottom of drawer */}
             <div style={{padding:"8px 0 36px"}}>
+              <div style={{padding:"0 22px 10px",fontSize:10,fontWeight:700,letterSpacing:".18em",textTransform:"uppercase",color:"rgba(255,255,255,.42)",textAlign:"center"}}>
+                FOLLOW US
+              </div>
               <div style={{display:"flex",justifyContent:"space-around",alignItems:"center",paddingLeft:22,paddingRight:22}}>
                 {[{ic:SI.fb,url:"https://www.facebook.com/profile.php?id=61582266356916",c:"#1877f2"},
                   {ic:SI.ig,url:"https://www.instagram.com/cloud.hubbly/?hl=en",c:"#e1306c"},
@@ -641,43 +897,42 @@ export default function App() {
             </div>
           </div>
 
-          {/* ══════════════════════════════════ */}
+          {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
           {/* PAGE: HOME                          */}
-          {/* ══════════════════════════════════ */}
+          {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
           <div style={{position:"absolute",inset:0,
             transform:page==="home"?"translateX(0)":"translateX(-100%)",
             transition:"transform .35s cubic-bezier(.4,0,.2,1)",
             background:"#f2f2f2",display:"flex",flexDirection:"column"}}>
-            <StatusBar dark/>
-            <TopBar dark/>
+            <TopBar dark={homeTopBarDark}/>
             <div ref={mainRef} style={{flex:1,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch"}} id="mainScroll">
 
                             {/* HERO */}
-              <div style={{position:"relative",height:"100svh",minHeight:680,overflow:"hidden",flexShrink:0,background:"#000"}}>
+              <div ref={heroRef} style={{position:"relative",height:"100svh",minHeight:"min(680px, 100svh)",overflow:"hidden",flexShrink:0,background:"#000"}}>
                 <img src={IMAGE_BG} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"62% center",opacity:.66,transform:"scale(1.02)"}}/>
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.7) 36%,rgba(0,0,0,.28) 64%,rgba(0,0,0,.58) 100%)"}}/>
                 <Smoke/>
 
-                <div style={{position:"absolute",top:132,left:0,right:0,padding:"0 18px",zIndex:5,textAlign:"center"}}>
+                <div style={{position:"absolute",top:"clamp(108px, 16vw, 132px)",left:0,right:0,padding:"0 18px",zIndex:5,textAlign:"center"}}>
                   <div style={{fontSize:10,letterSpacing:".34em",textTransform:"uppercase",color:"rgba(255,255,255,.64)"}}>
                     {"CAPE TOWN \u2022 PREMIUM HOOKAH RENTAL"}
                   </div>
                 </div>
 
-                <div style={{position:"absolute",left:0,right:0,top:182,zIndex:5,padding:"0 18px"}}>
-                  <div style={{width:"min(340px, 86vw)",margin:"0 auto",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",gap:80}}>
-                    <div style={{fontFamily:"Georgia,serif",fontWeight:900,fontSize:70,color:"#fff",lineHeight:.8,letterSpacing:".02em"}}>
+                <div style={{position:"absolute",left:0,right:0,top:"clamp(150px, 26vw, 182px)",zIndex:5,padding:"0 18px"}}>
+                  <div style={{width:"min(340px, 90vw)",margin:"0 auto",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",gap:"clamp(44px, 12vw, 80px)"}}>
+                    <div style={{fontFamily:"Georgia,serif",fontWeight:900,fontSize:"clamp(56px, 15vw, 70px)",color:"#fff",lineHeight:.8,letterSpacing:".02em"}}>
                       CLOUD
                       <br/>
-                      <span style={{fontSize:160,color:"transparent",WebkitTextStroke:"1px rgba(255,255,255,.25)"}}>9</span>
+                      <span style={{fontSize:"clamp(118px, 30vw, 160px)",color:"transparent",WebkitTextStroke:"1px rgba(255,255,255,.25)"}}>9</span>
                       <br/>
-                      <span style={{fontSize:25,color:"#fff",letterSpacing:".04em"}}>HOOKAH</span>
+                      <span style={{fontSize:"clamp(21px, 6vw, 25px)",color:"#fff",letterSpacing:".04em"}}>HOOKAH</span>
                     </div>
-                    <p style={{fontSize:16,color:"rgba(255,255,255,.66)",lineHeight:1.55,maxWidth:280,margin:0}}>Premium pipes delivered to your door</p>
+                    <p style={{fontSize:"clamp(14px, 4vw, 16px)",color:"rgba(255,255,255,.66)",lineHeight:1.55,maxWidth:280,margin:0}}>Premium pipes delivered to your door</p>
                   </div>
                 </div>
 
-                <div style={{position:"absolute",left:"50%",transform:"translateX(-50%)",bottom:270,zIndex:6,width:"min(320px, 86vw)",display:"flex",gap:10,flexWrap:"nowrap"}}>
+                <div style={{position:"absolute",left:"50%",transform:"translateX(-50%)",bottom:"clamp(150px, 34vw, 270px)",zIndex:6,width:"min(320px, 86vw)",display:"flex",gap:10,flexWrap:"nowrap"}}>
                   <button onClick={()=>shopRef.current?.scrollIntoView({behavior:"smooth"})}
                     style={heroButtonStyle("shop")}
                     onMouseEnter={()=>setHeroBtnHover("shop")}
@@ -716,7 +971,7 @@ export default function App() {
                     color:"#fff",border:"none",borderRadius:11,fontSize:12,fontWeight:800,
                     letterSpacing:".08em",textTransform:"uppercase",cursor:"pointer",marginTop:2,
                     boxShadow:"0 4px 14px rgba(0,0,0,.16)"}}>
-                    View Cart ({cart.length}) · R{cart.reduce((s,i)=>s+i.totalNow,0).toLocaleString()} →
+                    View Cart ({cart.length}) {"\u2022"} R{cart.reduce((s,i)=>s+i.totalNow,0).toLocaleString()} {"\u2192"}
                   </button>
                 )}
               </div>
@@ -815,7 +1070,7 @@ export default function App() {
                       "Visiting Cape Town on holiday",
                       "Or simply enjoying a night with friends",
                     ].map(line=>(
-                      <div key={line} style={{fontSize:11,color:"#bdbdbd",padding:"3px 0"}}>• {line}</div>
+                      <div key={line} style={{fontSize:11,color:"#bdbdbd",padding:"3px 0"}}>{"\u2022"} {line}</div>
                     ))}
                   </div>
                   <p style={{fontSize:11,color:"#c0c0c0",lineHeight:1.8,marginBottom:10}}>
@@ -1027,8 +1282,7 @@ export default function App() {
             transform:page==="cart"?"translateX(0)":"translateX(100%)",
             transition:"transform .35s cubic-bezier(.4,0,.2,1)",
             background:"#fff",display:"flex",flexDirection:"column"}}>
-            <StatusBar/>
-            <div style={{position:"absolute",top:52,left:0,right:0,height:48,
+            <div style={{position:"absolute",top:"calc(env(safe-area-inset-top, 0px) + 8px)",left:0,right:0,height:48,
               display:"flex",alignItems:"center",padding:"0 14px",
               zIndex:40,borderBottom:"1px solid #f0f0f0",background:"#fff"}}>
               <button onClick={()=>setPage("home")} style={{display:"flex",alignItems:"center",gap:5,
@@ -1040,7 +1294,7 @@ export default function App() {
                 Cart {cart.length>0&&<span style={{background:"#111",color:"#fff",borderRadius:99,fontSize:10,fontWeight:700,padding:"1px 6px",marginLeft:3}}>{cart.length}</span>}
               </span>
             </div>
-            <div style={{flex:1,overflowY:"auto",padding:"12px 14px",marginTop:100}}>
+            <div style={{flex:1,overflowY:"auto",padding:"12px 14px",marginTop:"calc(env(safe-area-inset-top, 0px) + 56px)"}}>
               {cart.length===0
                 ?<div style={{textAlign:"center",padding:"3rem 1rem"}}>
                   <div style={{marginBottom:12,opacity:.15,display:"flex",justifyContent:"center"}}>
@@ -1051,7 +1305,11 @@ export default function App() {
                 </div>
                 :cart.map((item,i)=>(
                   <div key={i} style={{display:"flex",gap:11,padding:"11px 0",borderBottom:"1px solid #f8f8f8",alignItems:"center"}}>
-                    <div style={{width:58,height:58,background:"#f5f5f5",borderRadius:10,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",padding:4,border:"1px solid #eee"}}>
+                    <button
+                      onClick={()=>openCartHoursEditor(i)}
+                      aria-label={`Edit rental hours for ${item.name}`}
+                      style={{width:58,height:58,background:"#f5f5f5",borderRadius:10,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",padding:4,border:"1px solid #eee",cursor:"pointer",position:"relative"}}
+                    >
                       <img
                         src={item.img}
                         alt={item.name}
@@ -1062,10 +1320,12 @@ export default function App() {
                         }}
                         style={{maxWidth:"100%",maxHeight:"100%",objectFit:"contain"}}
                       />
-                    </div>
+                      <span style={{position:"absolute",right:-5,bottom:-5,background:"#111",color:"#fff",borderRadius:999,padding:"1px 5px",fontSize:9,fontWeight:800,lineHeight:1.3}}>+{item.isCombo ? COMBO_HOURS_STEP : 4}h</span>
+                    </button>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:700,fontSize:13,color:"#111"}}>{item.name}</div>
-                      <div style={{fontSize:11,color:"#bbb",marginTop:1}}>{item.hours}h rental</div>
+                      <div style={{fontSize:11,color:"#bbb",marginTop:1}}>{item.hours}h rental {"\u2022"} Qty {item.quantity || 1}</div>
+                      <div style={{fontSize:10,color:"#9a9a9a",marginTop:1}}>Tap image to edit hours (+/-)</div>
                       <div style={{fontSize:10,color:"#ddd"}}>Deposit: R{item.deposit.toLocaleString()}</div>
                       {item.isCombo&&(
                         <div style={{fontSize:10,color:"#aaa",marginTop:2}}>
@@ -1073,8 +1333,36 @@ export default function App() {
                           {item.weedBag&&<div>Weed bag: +R{comboAddOnPrice}</div>}
                         </div>
                       )}
-                      <button onClick={()=>setCart(c=>c.filter((_,idx)=>idx!==i))}
-                        style={{background:"none",border:"none",color:"#ff4444",fontSize:10,cursor:"pointer",padding:"2px 0 0",fontWeight:700}}>Remove</button>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginTop:6}}>
+                        <div style={{display:"inline-flex",alignItems:"center",border:"1px solid #e5e5e5",borderRadius:999,padding:"2px 4px",background:"#fafafa"}}>
+                          <button
+                            onClick={()=>changeCartQuantity(i,-1)}
+                            style={{width:22,height:22,border:"none",background:"transparent",cursor:"pointer",fontSize:14,fontWeight:800,color:"#222",borderRadius:999}}
+                            aria-label={`Decrease quantity for ${item.name}`}
+                          >
+                            -
+                          </button>
+                          <span style={{minWidth:24,textAlign:"center",fontSize:11,fontWeight:800,color:"#111"}}>{item.quantity || 1}</span>
+                          <button
+                            onClick={()=>changeCartQuantity(i,1)}
+                            style={{width:22,height:22,border:"none",background:"transparent",cursor:"pointer",fontSize:14,fontWeight:800,color:"#222",borderRadius:999}}
+                            aria-label={`Increase quantity for ${item.name}`}
+                          >
+                            +
+                          </button>
+                        </div>
+                        <button
+                          onClick={()=>removeCartItem(i)}
+                          aria-label={`Remove ${item.name}`}
+                          style={{width:28,height:28,border:"none",borderRadius:8,background:"#ef4444",color:"#fff",display:"inline-flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M8 6v-2h8v2"/>
+                            <path d="M19 6l-1 14H6L5 6"/>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     <div style={{fontWeight:800,fontSize:15,color:"#111",flexShrink:0}}>R{item.totalNow.toLocaleString()}</div>
                   </div>
@@ -1094,7 +1382,36 @@ export default function App() {
                   <span style={{fontWeight:900,fontSize:24,color:"#111"}}>R{cartTotal.toLocaleString()}</span>
                 </div>
                 <div style={{fontSize:10,color:"#ccc",fontStyle:"italic",marginBottom:12}}>R{cartDeposit.toLocaleString()} refunded on return</div>
-                <button onClick={()=>{setPage("checkout");setStep(1);}} style={{width:"100%",padding:"14px",background:"#111",color:"#fff",border:"none",borderRadius:12,fontSize:13,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer"}}>Checkout →</button>
+                <button onClick={()=>{
+                  setPage("checkout");
+                  setStep(1);
+                  trackEvent("checkout_opened",{ cartItems: cart.length, total: cartTotal });
+                }} style={{width:"100%",padding:"14px",background:"#111",color:"#fff",border:"none",borderRadius:12,fontSize:13,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer"}}>Checkout {"\u2192"}</button>
+              </div>
+            )}
+            {cartHourEditor&&(
+              <div onClick={()=>setCartHourEditor(null)} style={{position:"absolute",inset:0,zIndex:170,background:"rgba(0,0,0,.62)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}}>
+                <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:320,background:"#fff",borderRadius:16,overflow:"hidden",boxShadow:"0 20px 50px rgba(0,0,0,.35)"}}>
+                  <div style={{padding:"14px 14px 10px",borderBottom:"1px solid #eee"}}>
+                    <div style={{fontFamily:"Georgia,serif",fontSize:21,fontWeight:900,color:"#111",marginBottom:4}}>Edit Rental Hours</div>
+                    <div style={{fontSize:11,color:"#777",lineHeight:1.5}}>{cartHourEditor.name} {"\u2022"} Adjust safely if you tapped by mistake.</div>
+                  </div>
+                  <div style={{padding:14}}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"#fafafa",border:"1px solid #eee",borderRadius:12,padding:"9px 10px",marginBottom:10}}>
+                      <span style={{fontSize:11,fontWeight:700,color:"#444",letterSpacing:".05em",textTransform:"uppercase"}}>Rental Hours</span>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        <button onClick={()=>changeCartHourDraft(-cartHourEditor.step)} style={{width:28,height:28,borderRadius:999,border:"1px solid #ddd",background:"#fff",cursor:"pointer",fontSize:17,lineHeight:1}}>-</button>
+                        <span style={{minWidth:44,textAlign:"center",fontSize:13,fontWeight:900,color:"#111"}}>{cartHourEditor.hours}h</span>
+                        <button onClick={()=>changeCartHourDraft(cartHourEditor.step)} style={{width:28,height:28,borderRadius:999,border:"1px solid #ddd",background:"#fff",cursor:"pointer",fontSize:17,lineHeight:1}}>+</button>
+                      </div>
+                    </div>
+                    <div style={{fontSize:10,color:"#9a9a9a",marginBottom:12}}>Minimum {cartHourEditor.min}h. Step is {cartHourEditor.step}h.</div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                      <button onClick={()=>setCartHourEditor(null)} style={{padding:"10px",background:"#f3f3f3",color:"#111",border:"1px solid #e7e7e7",borderRadius:10,fontSize:11,fontWeight:800,letterSpacing:".05em",textTransform:"uppercase",cursor:"pointer"}}>Cancel</button>
+                      <button onClick={applyCartHourDraft} style={{padding:"10px",background:"#111",color:"#fff",border:"none",borderRadius:10,fontSize:11,fontWeight:800,letterSpacing:".05em",textTransform:"uppercase",cursor:"pointer"}}>Save Hours</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -1104,25 +1421,24 @@ export default function App() {
             transform:page==="checkout"?"translateX(0)":"translateX(100%)",
             transition:"transform .35s cubic-bezier(.4,0,.2,1)",
             background:"#fff",display:"flex",flexDirection:"column"}}>
-            <StatusBar/>
-            <div style={{position:"absolute",top:52,left:0,right:0,height:48,
+            <div style={{position:"absolute",top:"calc(env(safe-area-inset-top, 0px) + 8px)",left:0,right:0,height:48,
               display:"flex",alignItems:"center",padding:"0 14px",
               zIndex:40,borderBottom:"1px solid #f0f0f0",background:"#fff"}}>
               {step<3&&<button onClick={()=>step===1?setPage("cart"):setStep(1)} style={{display:"flex",alignItems:"center",gap:5,background:"none",border:"none",cursor:"pointer",fontSize:13,fontWeight:700,color:"#111"}}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>Back
               </button>}
               <span style={{fontFamily:"Georgia,serif",fontWeight:900,fontSize:15,color:"#111",position:"absolute",left:"50%",transform:"translateX(-50%)",whiteSpace:"nowrap"}}>
-                {step===1?"Delivery":step===2?"Payment":"Confirmed! 🎉"}
+                {step===1?"Delivery":step===2?(checkoutEnabled?"Payment":"Booking"):"Confirmed!"}
               </span>
               {step<3&&<span style={{marginLeft:"auto",fontSize:10,color:"#ccc"}}>{step}/2</span>}
             </div>
-            <div style={{flex:1,overflowY:"auto",padding:"12px 14px 32px",marginTop:100}}>
+            <div style={{flex:1,overflowY:"auto",padding:"12px 14px 32px",marginTop:"calc(env(safe-area-inset-top, 0px) + 56px)"}}>
               {step<3&&(
                 <div style={{background:"#f8f8f8",border:"1px solid #f0f0f0",borderRadius:11,padding:"10px 11px",marginBottom:14,fontSize:11}}>
                   {cart.map((item,i)=>(
                     <div key={i} style={{borderBottom:"1px solid #f0f0f0",padding:"4px 0"}}>
                       <div style={{display:"flex",justifyContent:"space-between",color:"#888"}}>
-                        <span>{item.name} — {item.hours}h</span>
+                        <span>{item.name} - {item.hours}h x{item.quantity || 1}</span>
                         <span style={{fontWeight:700,color:"#111"}}>R{item.totalNow.toLocaleString()}</span>
                       </div>
                       {item.isCombo&&(
@@ -1145,50 +1461,75 @@ export default function App() {
                   <DeliveryField label="Street Address *" value={form.address} onChange={v=>upd("address",v)} ph="123 Main Street"/>
                   <DeliveryField label="Suburb" value={form.suburb} onChange={v=>upd("suburb",v)} ph="Sea Point, Cape Town"/>
                   <DeliveryField label="Notes" value={form.notes} onChange={v=>upd("notes",v)} ph="Gate code, preferred time..."/>
-                  <button onClick={()=>{if(!form.name||!form.phone||!form.address){alert("Please fill Name, Phone & Address.");return;}setStep(2);}}
+                  <button onClick={()=>{
+                    if(!form.name||!form.phone||!form.address){alert("Please fill Name, Phone & Address.");return;}
+                    setStep(2);
+                    trackEvent("delivery_details_completed",{ cartItems: cart.length, total: cartTotal });
+                  }}
                     style={{width:"100%",padding:"13px",background:"#111",color:"#fff",border:"none",borderRadius:11,fontSize:12,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer",marginTop:5}}>
-                    Continue to Payment →
+                    Continue to Payment {"\u2192"}
                   </button>
                 </>
               )}
-                            {step===2&&(
-                <div style={{background:"linear-gradient(135deg,#e8f4ff,#eef0ff)",border:"1px solid #d0e0ff",borderRadius:14,padding:"1.4rem 1rem",textAlign:"center"}}>
-                  {paymentState==="cancel"&&(
-                    <div style={{background:"#fff3cd",border:"1px solid #ffe69c",color:"#8a6d1f",padding:"8px 10px",borderRadius:9,fontSize:11,marginBottom:10}}>
-                      Payment was cancelled. You can try again.
+              {step===2&&(
+                checkoutEnabled ? (
+                  <div style={{background:"linear-gradient(135deg,#e8f4ff,#eef0ff)",border:"1px solid #d0e0ff",borderRadius:14,padding:"1.4rem 1rem",textAlign:"center"}}>
+                    {paymentState==="cancel"&&(
+                      <div style={{background:"#fff3cd",border:"1px solid #ffe69c",color:"#8a6d1f",padding:"8px 10px",borderRadius:9,fontSize:11,marginBottom:10}}>
+                        Payment was cancelled. You can try again.
+                      </div>
+                    )}
+                    {paymentState==="failed"&&(
+                      <div style={{background:"#fde2e2",border:"1px solid #f7b0b0",color:"#8b1d1d",padding:"8px 10px",borderRadius:9,fontSize:11,marginBottom:10}}>
+                        Payment failed. Please try again.
+                      </div>
+                    )}
+                    <div style={{fontWeight:900,fontSize:24,color:"#0055cc",letterSpacing:".05em",marginBottom:7}}>PAYFAST</div>
+                    <div style={{fontSize:12,color:"#666",lineHeight:1.6,marginBottom:16}}>
+                      You will be redirected to the Payfast hosted checkout page.<br/>
+                      Enter card details securely on Payfast only.
                     </div>
-                  )}
-                  {paymentState==="failed"&&(
-                    <div style={{background:"#fde2e2",border:"1px solid #f7b0b0",color:"#8b1d1d",padding:"8px 10px",borderRadius:9,fontSize:11,marginBottom:10}}>
-                      Payment failed. Please try again.
-                    </div>
-                  )}
-                  <div style={{fontWeight:900,fontSize:24,color:"#0055cc",letterSpacing:".05em",marginBottom:7}}>PAYFAST</div>
-                  <div style={{fontSize:12,color:"#666",lineHeight:1.6,marginBottom:16}}>
-                    You will be redirected to the Payfast hosted checkout page.<br/>
-                    Enter card details securely on Payfast only.
+                    <button onClick={startPayfastCheckout} disabled={paying}
+                      style={{width:"100%",padding:"13px",background:paying?"#9ab8e8":"#0055cc",color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:paying?"wait":"pointer"}}>
+                      {paying?"Redirecting...":`Pay R${cartTotal.toLocaleString()} with Payfast`}
+                    </button>
+                    <div style={{fontSize:10,color:"#aaa",marginTop:9}}>Secure hosted checkout. We never capture card numbers, CVV, or expiry dates.</div>
                   </div>
-                  <button onClick={startPayfastCheckout} disabled={paying}
-                    style={{width:"100%",padding:"13px",background:paying?"#9ab8e8":"#0055cc",color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:paying?"wait":"pointer"}}>
-                    {paying?"Redirecting...":`Pay R${cartTotal.toLocaleString()} with Payfast`}
-                  </button>
-                  <div style={{fontSize:10,color:"#aaa",marginTop:9}}>Secure hosted checkout. We never capture card numbers, CVV, or expiry dates.</div>
-                </div>
+                ) : (
+                  <div style={{background:"linear-gradient(135deg,#fff4dc,#ffe9c3)",border:"1px solid #ffd89a",borderRadius:14,padding:"1.4rem 1rem",textAlign:"center"}}>
+                    <div style={{fontWeight:900,fontSize:20,color:"#7a4a00",letterSpacing:".04em",marginBottom:7}}>BOOKING MODE</div>
+                    <div style={{fontSize:12,color:"#7a5b25",lineHeight:1.6,marginBottom:14}}>
+                      Hookah stock is currently unavailable for instant checkout.<br/>
+                      Leave your booking request and we will contact you to confirm availability.
+                    </div>
+                    <button onClick={submitBookingRequest} disabled={bookingSubmitting}
+                      style={{width:"100%",padding:"13px",background:bookingSubmitting?"#b7a17a":"#7a4a00",color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:bookingSubmitting?"wait":"pointer"}}>
+                      {bookingSubmitting?"Sending...":"Book This Order"}
+                    </button>
+                    <div style={{fontSize:10,color:"#9d7b43",marginTop:9}}>No payment is required now. We will contact you via phone/WhatsApp.</div>
+                  </div>
+                )
               )}
               {step===3&&(
                 <div style={{textAlign:"center",paddingTop:16}}>
-                  <div style={{fontSize:56,marginBottom:12}}>🎉</div>
-                  <div style={{fontWeight:900,fontSize:21,color:"#111",marginBottom:7}}>Order Confirmed!</div>
-                  {paidOrderNumber&&<p style={{color:"#999",fontSize:11,marginBottom:6}}>Order Number: {paidOrderNumber}</p>}
+                  <div style={{fontSize:56,marginBottom:12}}>{"\u2713"}</div>
+                  <div style={{fontWeight:900,fontSize:21,color:"#111",marginBottom:7}}>
+                    {paymentState==="booking" ? "Booking Received!" : "Order Confirmed!"}
+                  </div>
+                  {paidOrderNumber&&<p style={{color:"#999",fontSize:11,marginBottom:6}}>{paymentState==="booking" ? "Booking Reference" : "Order Number"}: {paidOrderNumber}</p>}
                   <p style={{color:"#777",fontSize:13,marginBottom:3}}>Thanks, <strong>{form.name}</strong>!</p>
                   <p style={{color:"#bbb",fontSize:11,marginBottom:16}}>{form.address}{form.suburb?`, ${form.suburb}`:""}</p>
                   <div style={{display:"flex",alignItems:"flex-start",gap:9,background:"#f0fff4",border:"1px solid #b2f0cb",borderRadius:11,padding:".9rem",margin:"0 0 12px",textAlign:"left"}}>
-                    <span style={{fontSize:18,flexShrink:0}}>💬</span>
-                    <span style={{fontSize:12,color:"#1a7a40",lineHeight:1.6}}>Your order has been received. We will confirm your delivery window shortly.</span>
+                    <span style={{fontSize:18,flexShrink:0}}>i</span>
+                    <span style={{fontSize:12,color:"#1a7a40",lineHeight:1.6}}>
+                      {paymentState==="booking"
+                        ? "Your booking request has been saved. We will contact you shortly to confirm next steps."
+                        : "Your order has been received. We will confirm your delivery window shortly."}
+                    </span>
                   </div>
                   <div style={{background:"#f8f8f8",borderRadius:9,padding:".75rem",fontSize:11,color:"#aaa",marginBottom:16,textAlign:"left"}}>
-                    <div style={{marginBottom:3}}>🚗 Free delivery & collection included</div>
-                    <div>💰 R{cartDeposit.toLocaleString()} deposit refunded on safe return</div>
+                    <div style={{marginBottom:3}}>Free delivery & collection included</div>
+                    <div>R{cartDeposit.toLocaleString()} deposit refunded on safe return</div>
                   </div>
                   <button onClick={()=>{setPage("home");setStep(1);setForm({name:"",phone:"",email:"",address:"",suburb:"",notes:""});setTimeout(()=>mainRef.current?.scrollTo({top:0,behavior:"smooth"}),60);}}
                     style={{padding:"11px 26px",background:"#111",color:"#fff",border:"none",borderRadius:11,fontSize:12,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer"}}>
@@ -1211,6 +1552,8 @@ export default function App() {
     </div>
   );
 }
+
+
 
 
 

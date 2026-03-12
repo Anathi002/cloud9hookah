@@ -5,6 +5,11 @@ function isNonEmpty(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function isEnabled(value, fallback = true) {
+  if (value === undefined || value === null || value === "") return fallback;
+  return String(value).trim().toLowerCase() === "true";
+}
+
 function generateOrderNumber() {
   const stamp = Date.now().toString().slice(-8);
   const rand = Math.floor(Math.random() * 900 + 100);
@@ -47,6 +52,14 @@ async function insertOrderCompat(client, { orderNumber, customerId, totalAmount,
 
 export async function createOrder(req, res, next) {
   try {
+    const checkoutEnabled = isEnabled(process.env.CHECKOUT_ENABLED, true);
+    if (!checkoutEnabled) {
+      return res.status(503).json({
+        error: "Checkout is temporarily unavailable. Please use booking mode.",
+        code: "CHECKOUT_DISABLED",
+      });
+    }
+
     const { customer, items, currency } = req.body || {};
 
     if (String(currency || "ZAR").toUpperCase() !== "ZAR") {

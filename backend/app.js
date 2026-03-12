@@ -1,8 +1,10 @@
 import express from "express";
 import cors from "cors";
 
+import engagementRoutes from "./routes/engagementRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
 import webhookRoutes from "./routes/webhookRoutes.js";
 
 export const app = express();
@@ -44,8 +46,10 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "cloud9-backend" });
 });
 
+app.use(engagementRoutes);
 app.use(orderRoutes);
 app.use(paymentRoutes);
+app.use(reportRoutes);
 app.use(webhookRoutes);
 
 app.use((err, _req, res, _next) => {

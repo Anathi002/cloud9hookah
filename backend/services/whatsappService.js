@@ -36,12 +36,14 @@ export async function sendWhatsAppOrderNotification(order) {
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const notifyNumber = process.env.BUSINESS_NOTIFICATION_NUMBER;
+  const rawApiVersion = String(process.env.WHATSAPP_GRAPH_API_VERSION || "v21.0").trim();
+  const graphApiVersion = rawApiVersion.startsWith("v") ? rawApiVersion : `v${rawApiVersion}`;
 
   if (!token || !phoneNumberId || !notifyNumber) {
     throw new Error("Missing WhatsApp env vars (token/phone_number_id/business_number)");
   }
 
-  const url = `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`;
+  const url = `https://graph.facebook.com/${graphApiVersion}/${phoneNumberId}/messages`;
   const bodyText = formatWhatsAppOrderMessage(order);
 
   const response = await axios.post(

@@ -34,5 +34,31 @@
 - `paid_at` TIMESTAMPTZ NULL
 - `created_at` TIMESTAMPTZ DEFAULT NOW()
 
+## booking_requests
+- `id` BIGSERIAL PRIMARY KEY
+- `full_name` TEXT NOT NULL
+- `phone` TEXT NOT NULL
+- `email` TEXT NULL
+- `address` TEXT NOT NULL
+- `suburb` TEXT NULL
+- `notes` TEXT NULL
+- `cart_snapshot` JSONB NOT NULL
+- `total_amount` NUMERIC(12,2) NOT NULL
+- `source` TEXT NULL
+- `status` TEXT NOT NULL CHECK IN (`NEW`, `CONTACTED`, `CLOSED`)
+- `created_at` TIMESTAMPTZ DEFAULT NOW()
+
+## engagement_events
+- `id` BIGSERIAL PRIMARY KEY
+- `session_id` TEXT NULL
+- `event_name` TEXT NOT NULL
+- `page` TEXT NULL
+- `referrer` TEXT NULL
+- `user_agent` TEXT NULL
+- `ip_address` TEXT NULL
+- `meta` JSONB NOT NULL
+- `created_at` TIMESTAMPTZ DEFAULT NOW()
+
 ## Migration file
 - [001_init.sql](/c:/Users/AnathiDayise/OneDrive%20-%20Inspired%20Testing%20(Pty)%20Ltd/Desktop/cloud%209%20hookah/database/migrations/001_init.sql)
+- [002_engagement_prelaunch.sql](/c:/Users/AnathiDayise/OneDrive%20-%20Inspired%20Testing%20(Pty)%20Ltd/Desktop/cloud%209%20hookah/database/migrations/002_engagement_prelaunch.sql)

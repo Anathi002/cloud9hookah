@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import PayfastRedirectForm from "../components/PayfastRedirectForm.jsx";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+const CHECKOUT_ENABLED = String(import.meta.env.VITE_CHECKOUT_ENABLED || "false").toLowerCase() === "true";
 
 // Example checkout page for a React/Next-style app.
 export default function CheckoutPage() {
@@ -44,19 +45,38 @@ export default function CheckoutPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL.replace(/\/+$/, "")}/create-order`, {
+      const endpoint = CHECKOUT_ENABLED ? "/create-order" : "/book-now";
+      const response = await fetch(`${API_BASE_URL.replace(/\/+$/, "")}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer,
-          items,
-          currency: "ZAR",
-        }),
+        body: JSON.stringify(
+          CHECKOUT_ENABLED
+            ? {
+                customer,
+                items,
+                currency: "ZAR",
+              }
+            : {
+                customer,
+                items: items.map((item) => ({
+                  name: item.product_name,
+                  quantity: item.quantity,
+                  totalNow: Number(item.price) * Number(item.quantity),
+                })),
+                totalAmount: total,
+                source: "ads-prelaunch",
+              }
+        ),
       });
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create order.");
+        throw new Error(data.error || (CHECKOUT_ENABLED ? "Failed to create order." : "Failed to create booking request."));
+      }
+
+      if (!CHECKOUT_ENABLED) {
+        setError(`Booking request received. Reference: ${data.bookingReference || data.bookingId || "-"}`);
+        return;
       }
 
       setPayfastData({

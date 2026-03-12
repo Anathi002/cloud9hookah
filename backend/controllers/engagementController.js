@@ -1,0 +1,113 @@
+import { pool } from "../db/pool.js";
+
+function isNonEmpty(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function toSafeNumber(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function normalizeItems(items) {
+  if (!Array.isArray(items)) return [];
+  return items
+    .map((item) => ({
+      productName: String(item.product_name || item.productName || item.name || "").trim(),
+      quantity: Math.max(1, Math.trunc(toSafeNumber(item.quantity, 1))),
+      hours: Math.max(0, Math.trunc(toSafeNumber(item.hours, 0))),
+      totalNow: Math.max(0, toSafeNumber(item.totalNow ?? item.total ?? item.price ?? 0, 0)),
+    }))
+    .filter((item) => item.productName.length > 0);
+}
+
+function cleanIp(req) {
+  const forwardedFor = String(req.headers["x-forwarded-for"] || "")
+    .split(",")[0]
+    .trim();
+  return forwardedFor || req.ip || null;
+}
+
+export async function createBookingRequest(req, res, next) {
+  try {
+    const { customer = {}, items = [], totalAmount = 0, source = "prelaunch-website" } = req.body || {};
+
+    if (!isNonEmpty(customer.name) || !isNonEmpty(customer.phone) || !isNonEmpty(customer.address)) {
+      return res.status(400).json({ error: "Customer name, phone, and address are required" });
+    }
+
+    const normalizedItems = normalizeItems(items);
+    if (normalizedItems.length === 0) {
+      return res.status(400).json({ error: "At least one item is required for booking request" });
+    }
+
+    const resolvedTotal =
+      Math.max(0, toSafeNumber(totalAmount, 0)) ||
+      normalizedItems.reduce((sum, item) => sum + item.totalNow, 0);
+
+    const insertResult = await pool.query(
+      `INSERT INTO booking_requests
+        (full_name, phone, email, address, suburb, notes, cart_snapshot, total_amount, source)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9)
+       RETURNING id, created_at`,
+      [
+        String(customer.name).trim(),
+        String(customer.phone).trim(),
+        String(customer.email || "").trim() || null,
+        String(customer.address).trim(),
+        String(customer.suburb || "").trim() || null,
+        String(customer.notes || "").trim() || null,
+        JSON.stringify(normalizedItems),
+        resolvedTotal,
+        String(source || "prelaunch-website").trim().slice(0, 120),
+      ]
+    );
+
+    const row = insertResult.rows[0];
+    return res.status(201).json({
+      ok: true,
+      bookingId: row.id,
+      bookingReference: `BK-${String(row.id).padStart(5, "0")}`,
+      createdAt: row.created_at,
+      message: "Booking request captured. Team will contact customer.",
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function trackEngagementEvent(req, res, next) {
+  try {
+    const { sessionId, eventName, page, meta } = req.body || {};
+    const cleanEventName = String(eventName || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_.-]/g, "_")
+      .slice(0, 64);
+
+    if (!cleanEventName) {
+      return res.status(400).json({ error: "eventName is required" });
+    }
+
+    const metaJson = meta && typeof meta === "object" ? meta : {};
+
+    await pool.query(
+      `INSERT INTO engagement_events
+        (session_id, event_name, page, referrer, user_agent, ip_address, meta)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)`,
+      [
+        String(sessionId || "").trim() || null,
+        cleanEventName,
+        String(page || "").trim() || null,
+        req.get("referer") || null,
+        req.get("user-agent") || null,
+        cleanIp(req),
+        JSON.stringify(metaJson),
+      ]
+    );
+
+    return res.status(202).json({ ok: true });
+  } catch (err) {
+    return next(err);
+  }
+}
