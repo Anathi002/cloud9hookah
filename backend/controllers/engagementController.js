@@ -3,7 +3,6 @@ import {
   formatEmailBookingMessage,
   sendBusinessEmail,
 } from "../services/emailService.js";
-import { sendWhatsAppBookingNotification } from "../services/whatsappService.js";
 
 function isNonEmpty(value) {
   return typeof value === "string" && value.trim().length > 0;
@@ -113,32 +112,21 @@ export async function createBookingRequest(req, res, next) {
       requestedTime: row.requested_time || requestedTime,
     };
 
-    void Promise.allSettled([
-      sendWhatsAppBookingNotification(bookingPayload),
-      sendBusinessEmail({
-        subject: `Cloud 9 Booking ${bookingReference}`,
-        text: formatEmailBookingMessage(bookingPayload),
-      }),
-    ]).then((results) => {
-      const whatsappResult = results[0];
-      const emailResult = results[1];
-      if (whatsappResult?.status === "fulfilled" && whatsappResult.value?.skipped) {
-        console.warn("Booking WhatsApp notification skipped:", whatsappResult.value.reason);
-      } else if (whatsappResult?.status === "rejected") {
-        console.error("Booking WhatsApp notification failed:", whatsappResult.reason?.message || whatsappResult.reason);
-      }
-      if (emailResult?.status === "fulfilled") {
+    void sendBusinessEmail({
+      subject: `Cloud 9 Booking ${bookingReference}`,
+      text: formatEmailBookingMessage(bookingPayload),
+    })
+      .then(() => {
         console.log("Booking email notification sent:", bookingReference);
-      } else if (emailResult?.status === "rejected") {
-        const reason = emailResult.reason || {};
+      })
+      .catch((reason) => {
         console.error("Booking email notification failed:", {
           message: reason?.message || String(reason),
           code: reason?.code || null,
           command: reason?.command || null,
           responseCode: reason?.responseCode || null,
         });
-      }
-    });
+      });
 
     return res.status(201).json({
       ok: true,

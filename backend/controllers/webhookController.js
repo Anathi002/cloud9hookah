@@ -1,7 +1,6 @@
 import { pool } from "../db/pool.js";
 import { formatEmailOrderMessage, sendBusinessEmail } from "../services/emailService.js";
 import { parsePayfastAmount } from "../payments/payfast.js";
-import { sendWhatsAppOrderNotification } from "../services/whatsappService.js";
 import { verifyPayfastItn } from "../webhooks/payfastItn.js";
 
 async function getOrderForNotification(orderId) {
@@ -184,22 +183,21 @@ export async function handlePayfastItn(req, res, next) {
 
     const orderForNotification = normalizedStatus === "PAID" ? await getOrderForNotification(paidOrderId) : null;
     if (orderForNotification) {
-      void Promise.allSettled([
-        sendWhatsAppOrderNotification(orderForNotification),
-        sendBusinessEmail({
-          subject: `Cloud 9 Paid Order ${orderForNotification.order_number || ""}`.trim(),
-          text: formatEmailOrderMessage(orderForNotification),
-        }),
-      ]).then((results) => {
-        const whatsappResult = results[0];
-        const emailResult = results[1];
-        if (whatsappResult?.status === "rejected") {
-          console.error("WhatsApp notification failed:", whatsappResult.reason?.message || whatsappResult.reason);
-        }
-        if (emailResult?.status === "rejected") {
-          console.error("Order email notification failed:", emailResult.reason?.message || emailResult.reason);
-        }
-      });
+      void sendBusinessEmail({
+        subject: `Cloud 9 Paid Order ${orderForNotification.order_number || ""}`.trim(),
+        text: formatEmailOrderMessage(orderForNotification),
+      })
+        .then(() => {
+          console.log("Order email notification sent:", orderForNotification.order_number);
+        })
+        .catch((reason) => {
+          console.error("Order email notification failed:", {
+            message: reason?.message || String(reason),
+            code: reason?.code || null,
+            command: reason?.command || null,
+            responseCode: reason?.responseCode || null,
+          });
+        });
     }
 
     return res.status(200).send("OK");
