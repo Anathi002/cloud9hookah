@@ -122,11 +122,21 @@ export async function createBookingRequest(req, res, next) {
     ]).then((results) => {
       const whatsappResult = results[0];
       const emailResult = results[1];
-      if (whatsappResult?.status === "rejected") {
+      if (whatsappResult?.status === "fulfilled" && whatsappResult.value?.skipped) {
+        console.warn("Booking WhatsApp notification skipped:", whatsappResult.value.reason);
+      } else if (whatsappResult?.status === "rejected") {
         console.error("Booking WhatsApp notification failed:", whatsappResult.reason?.message || whatsappResult.reason);
       }
-      if (emailResult?.status === "rejected") {
-        console.error("Booking email notification failed:", emailResult.reason?.message || emailResult.reason);
+      if (emailResult?.status === "fulfilled") {
+        console.log("Booking email notification sent:", bookingReference);
+      } else if (emailResult?.status === "rejected") {
+        const reason = emailResult.reason || {};
+        console.error("Booking email notification failed:", {
+          message: reason?.message || String(reason),
+          code: reason?.code || null,
+          command: reason?.command || null,
+          responseCode: reason?.responseCode || null,
+        });
       }
     });
 

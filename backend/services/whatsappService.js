@@ -115,13 +115,18 @@ async function sendWhatsAppText(bodyText) {
   const notifyNumber = resolveNotifyNumber();
   const rawApiVersion = String(process.env.WHATSAPP_GRAPH_API_VERSION || "v21.0").trim();
   const graphApiVersion = rawApiVersion.startsWith("v") ? rawApiVersion : `v${rawApiVersion}`;
+  const enabled = String(process.env.WHATSAPP_ENABLED || "false").toLowerCase() === "true";
+
+  if (!enabled) {
+    return { ok: false, skipped: true, reason: "WHATSAPP_ENABLED=false" };
+  }
 
   if (!token || !phoneNumberId) {
-    throw new Error("Missing WhatsApp env vars (token/phone_number_id)");
+    return { ok: false, skipped: true, reason: "Missing WhatsApp env vars (token/phone_number_id)" };
   }
 
   if (!notifyNumber) {
-    throw new Error("Missing BUSINESS_NOTIFICATION_NUMBER / WHATSAPP_NOTIFY_TO");
+    return { ok: false, skipped: true, reason: "Missing BUSINESS_NOTIFICATION_NUMBER / WHATSAPP_NOTIFY_TO" };
   }
 
   const url = `https://graph.facebook.com/${graphApiVersion}/${phoneNumberId}/messages`;
