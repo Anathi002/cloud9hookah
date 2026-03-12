@@ -631,8 +631,8 @@ export default function App() {
       submitBookingRequest();
       return;
     }
-    if(!form.name || !form.phone || !form.address || !form.bookingDate || !form.bookingTime){
-      alert("Please fill Name, Phone, Address, Booking Date & Booking Time.");
+    if(!form.name || !form.phone || !form.address){
+      alert("Please fill Name, Phone & Address.");
       setStep(1);
       return;
     }
@@ -1495,16 +1495,14 @@ export default function App() {
                   <DeliveryField label="Email" value={form.email} onChange={v=>upd("email",v)} type="email" ph="you@email.com"/>
                   <DeliveryField label="Street Address *" value={form.address} onChange={v=>upd("address",v)} ph="123 Main Street"/>
                   <DeliveryField label="Suburb" value={form.suburb} onChange={v=>upd("suburb",v)} ph="Sea Point, Cape Town"/>
-                  <DeliveryField label="Preferred Booking Date *" value={form.bookingDate} onChange={v=>upd("bookingDate",v)} type="date" inputProps={{ min:minBookingDate }}/>
-                  <DeliveryField label="Preferred Booking Time *" value={form.bookingTime} onChange={v=>upd("bookingTime",v)} type="time"/>
                   <DeliveryField label="Notes" value={form.notes} onChange={v=>upd("notes",v)} ph="Gate code, preferred time..."/>
                   <button onClick={()=>{
-                    if(!form.name||!form.phone||!form.address||!form.bookingDate||!form.bookingTime){alert("Please fill Name, Phone, Address, Booking Date & Booking Time.");return;}
+                    if(!form.name||!form.phone||!form.address){alert("Please fill Name, Phone & Address.");return;}
                     setStep(2);
                     trackEvent("delivery_details_completed",{ cartItems: cart.length, total: cartTotal });
                   }}
                     style={{width:"100%",padding:"13px",background:"#111",color:"#fff",border:"none",borderRadius:11,fontSize:12,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer",marginTop:5}}>
-                    Continue to Payment {"\u2192"}
+                    {checkoutEnabled ? "Continue to Payment" : "Continue to Booking"} {"\u2192"}
                   </button>
                 </>
               )}
@@ -1538,6 +1536,21 @@ export default function App() {
                     <div style={{fontSize:12,color:"#7a5b25",lineHeight:1.6,marginBottom:14}}>
                       Hookah stock is currently unavailable for instant checkout.<br/>
                       Leave your booking request and we will contact you to confirm availability.
+                    </div>
+                    <div style={{textAlign:"left",marginBottom:10}}>
+                      <DeliveryField
+                        label="Preferred Booking Date *"
+                        value={form.bookingDate}
+                        onChange={v=>upd("bookingDate",v)}
+                        type="date"
+                        inputProps={{ min:minBookingDate }}
+                      />
+                      <DeliveryField
+                        label="Preferred Booking Time *"
+                        value={form.bookingTime}
+                        onChange={v=>upd("bookingTime",v)}
+                        type="time"
+                      />
                     </div>
                     <button onClick={submitBookingRequest} disabled={bookingSubmitting}
                       style={{width:"100%",padding:"13px",background:bookingSubmitting?"#b7a17a":"#7a4a00",color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:bookingSubmitting?"wait":"pointer"}}>
