@@ -259,10 +259,18 @@ function formatTimeInputValue(date) {
   return `${hours}:${minutes}`;
 }
 
+const BOOKING_AVAILABLE_FROM = "2026-03-16";
+
+function getBookingMinDate() {
+  const today = formatDateInputValue(new Date());
+  return today > BOOKING_AVAILABLE_FROM ? today : BOOKING_AVAILABLE_FROM;
+}
+
 function createInitialCheckoutForm() {
   const now = new Date();
   const soon = new Date(now.getTime() + 2 * 60 * 60 * 1000);
   soon.setMinutes(0, 0, 0);
+  const bookingMinDate = getBookingMinDate();
   return {
     name: "",
     phone: "",
@@ -270,7 +278,7 @@ function createInitialCheckoutForm() {
     address: "",
     suburb: "",
     notes: "",
-    bookingDate: formatDateInputValue(now),
+    bookingDate: bookingMinDate,
     bookingTime: formatTimeInputValue(soon),
   };
 }
@@ -308,7 +316,8 @@ export default function App() {
   const checkoutEnabled = String(import.meta.env.VITE_CHECKOUT_ENABLED || "false").toLowerCase() === "true";
   const engagementEnabled = String(import.meta.env.VITE_ENGAGEMENT_ENABLED || "true").toLowerCase() === "true";
   const prelaunchSource = String(import.meta.env.VITE_PRELAUNCH_SOURCE || "ads-prelaunch");
-  const minBookingDate = formatDateInputValue(new Date());
+  const minBookingDate = getBookingMinDate();
+  const bookingDateLocked = String(form.bookingDate || "") < minBookingDate;
   const sessionIdRef = useRef("");
 
   const cartRental=cart.reduce((s,i)=>s+i.rentalCost,0);
@@ -542,6 +551,10 @@ export default function App() {
     if(!form.name || !form.phone || !form.address || !form.bookingDate || !form.bookingTime){
       alert("Please fill Name, Phone, Address, Booking Date & Booking Time.");
       setStep(1);
+      return;
+    }
+    if(bookingDateLocked){
+      alert("Bookings are available from 16 March 2026 onward.");
       return;
     }
     if(cart.length===0){
@@ -1537,6 +1550,9 @@ export default function App() {
                       Hookah stock is currently unavailable for instant checkout.<br/>
                       Leave your booking request and we will contact you to confirm availability.
                     </div>
+                    <div style={{fontSize:11,color:"#8d6a2f",marginBottom:10}}>
+                      Booking slots are available from <strong>16 March 2026</strong> onward.
+                    </div>
                     <div style={{textAlign:"left",marginBottom:10}}>
                       <DeliveryField
                         label="Preferred Booking Date *"
@@ -1552,9 +1568,9 @@ export default function App() {
                         type="time"
                       />
                     </div>
-                    <button onClick={submitBookingRequest} disabled={bookingSubmitting}
-                      style={{width:"100%",padding:"13px",background:bookingSubmitting?"#b7a17a":"#7a4a00",color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:bookingSubmitting?"wait":"pointer"}}>
-                      {bookingSubmitting?"Sending...":"Book This Order"}
+                    <button onClick={submitBookingRequest} disabled={bookingSubmitting || bookingDateLocked}
+                      style={{width:"100%",padding:"13px",background:(bookingSubmitting||bookingDateLocked)?"#b7b7b7":"#7a4a00",color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:(bookingSubmitting||bookingDateLocked)?"not-allowed":"pointer"}}>
+                      {bookingSubmitting ? "Sending..." : bookingDateLocked ? "Available from 16 Mar" : "Book This Order"}
                     </button>
                     <div style={{fontSize:10,color:"#9d7b43",marginTop:9}}>No payment is required now. We will contact you via phone/WhatsApp.</div>
                   </div>
