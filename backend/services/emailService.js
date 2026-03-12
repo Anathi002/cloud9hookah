@@ -35,6 +35,9 @@ function getTransporter() {
   const secure = String(process.env.SMTP_SECURE || "false").toLowerCase() === "true";
   const user = String(process.env.SMTP_USER || "").trim();
   const pass = String(process.env.SMTP_PASS || "").trim();
+  const connectionTimeout = Number(process.env.SMTP_CONNECTION_TIMEOUT_MS || 10000);
+  const greetingTimeout = Number(process.env.SMTP_GREETING_TIMEOUT_MS || 10000);
+  const socketTimeout = Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 15000);
 
   if (!host || !user || !pass) {
     throw new Error("Missing SMTP env vars (SMTP_HOST/SMTP_USER/SMTP_PASS)");
@@ -44,6 +47,9 @@ function getTransporter() {
     host,
     port,
     secure,
+    connectionTimeout,
+    greetingTimeout,
+    socketTimeout,
     auth: { user, pass },
   });
 
