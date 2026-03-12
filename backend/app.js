@@ -9,10 +9,20 @@ import webhookRoutes from "./routes/webhookRoutes.js";
 
 export const app = express();
 
+function normalizeOrigin(origin) {
+  const raw = String(origin || "").trim();
+  if (!raw) return "";
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return raw.replace(/\/+$/, "");
+  }
+}
+
 const explicitOrigins = new Set(
   String(process.env.FRONTEND_BASE_URLS || process.env.FRONTEND_BASE_URL || "")
     .split(",")
-    .map((origin) => origin.trim())
+    .map((origin) => normalizeOrigin(origin))
     .filter(Boolean)
 );
 
@@ -20,20 +30,43 @@ function isLocalDevOrigin(origin) {
   return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
 }
 
+const vercelProjectPrefixes = String(
+  process.env.FRONTEND_VERCEL_PROJECTS || "cloud9hookah-live,cloud9hookah,cloud9_hookah"
+)
+  .split(",")
+  .map((value) => value.trim().toLowerCase())
+  .filter(Boolean);
+
+function isAllowedVercelOrigin(origin) {
+  try {
+    const normalized = normalizeOrigin(origin);
+    const url = new URL(normalized);
+    const hostname = String(url.hostname || "").toLowerCase();
+    if (!hostname.endsWith(".vercel.app")) return false;
+    return vercelProjectPrefixes.some(
+      (prefix) => hostname === `${prefix}.vercel.app` || hostname.startsWith(`${prefix}-`)
+    );
+  } catch {
+    return false;
+  }
+}
+
 app.use(
   cors({
     origin(origin, callback) {
       // Allow non-browser and same-process requests.
       if (!origin) return callback(null, true);
+      const normalizedOrigin = normalizeOrigin(origin);
 
-      if (explicitOrigins.has(origin)) return callback(null, true);
+      if (explicitOrigins.has(normalizedOrigin)) return callback(null, true);
+      if (isAllowedVercelOrigin(normalizedOrigin)) return callback(null, true);
 
       // In local development, allow localhost/127.0.0.1 across ports (4173, 5173, etc.).
-      if (process.env.NODE_ENV !== "production" && isLocalDevOrigin(origin)) {
+      if (process.env.NODE_ENV !== "production" && isLocalDevOrigin(normalizedOrigin)) {
         return callback(null, true);
       }
 
-      return callback(new Error(`CORS blocked origin: ${origin}`), false);
+      return callback(new Error(`CORS blocked origin: ${normalizedOrigin}`), false);
     },
   })
 );
