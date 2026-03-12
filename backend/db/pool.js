@@ -8,11 +8,21 @@ const ssl = useSsl ? { rejectUnauthorized: false } : false;
 
 function buildPoolConfig() {
   const databaseUrl = String(process.env.DATABASE_URL || "").trim();
+  const connectionTimeoutMillis = Number(process.env.DB_CONNECT_TIMEOUT_MS || 10000);
+  const statementTimeout = Number(process.env.DB_STATEMENT_TIMEOUT_MS || 15000);
+  const queryTimeout = Number(process.env.DB_QUERY_TIMEOUT_MS || 15000);
+
+  const timeoutConfig = {
+    connectionTimeoutMillis,
+    statement_timeout: statementTimeout,
+    query_timeout: queryTimeout,
+  };
 
   if (databaseUrl) {
     return {
       connectionString: databaseUrl,
       ssl,
+      ...timeoutConfig,
     };
   }
 
@@ -24,6 +34,7 @@ function buildPoolConfig() {
     user: process.env.DB_USER || "postgres",
     password: String(process.env.DB_PASSWORD ?? "postgres"),
     ssl,
+    ...timeoutConfig,
   };
 }
 

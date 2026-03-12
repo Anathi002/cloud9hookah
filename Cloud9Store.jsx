@@ -260,6 +260,7 @@ function formatTimeInputValue(date) {
 }
 
 const BOOKING_AVAILABLE_FROM = "2026-03-16";
+const BOOKING_REQUEST_TIMEOUT_MS = 20000;
 
 function getBookingMinDate() {
   const today = formatDateInputValue(new Date());
@@ -564,11 +565,14 @@ export default function App() {
 
     const items = buildCheckoutItems();
     const currentTotal = cartTotal;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), BOOKING_REQUEST_TIMEOUT_MS);
     setBookingSubmitting(true);
 
     fetch(`${apiBaseUrl}/book-now`,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
+      signal: controller.signal,
       body:JSON.stringify({
         customer:{
           name:form.name,
@@ -601,6 +605,13 @@ export default function App() {
       .catch(err=>{
         console.error("Booking request failed:", err);
         const msg = String(err?.message || "");
+        if (err?.name === "AbortError") {
+          alert(
+            "Booking request timed out. Please try again in a few seconds. " +
+            "If this keeps happening, check backend status and Render logs."
+          );
+          return;
+        }
         if (/failed to fetch/i.test(msg)) {
           alert(
             `Could not reach booking server at ${apiBaseUrl}.\n` +
@@ -611,6 +622,7 @@ export default function App() {
         }
       })
       .finally(()=>{
+        window.clearTimeout(timeoutId);
         setBookingSubmitting(false);
       });
   }
