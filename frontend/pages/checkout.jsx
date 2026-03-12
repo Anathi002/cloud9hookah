@@ -6,11 +6,15 @@ const CHECKOUT_ENABLED = String(import.meta.env.VITE_CHECKOUT_ENABLED || "false"
 
 // Example checkout page for a React/Next-style app.
 export default function CheckoutPage() {
+  const now = new Date();
+  const minBookingDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const [customer, setCustomer] = useState({
     name: "",
     phone: "",
     email: "",
     address: "",
+    bookingDate: minBookingDate,
+    bookingTime: "18:00",
     notes: "",
   });
   const [items, setItems] = useState([
@@ -38,6 +42,11 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!customer.bookingDate || !customer.bookingTime) {
+      setError("Preferred booking date and time are required.");
+      return;
+    }
+
     if (items.length === 0) {
       setError("Your cart is empty.");
       return;
@@ -57,7 +66,11 @@ export default function CheckoutPage() {
                 currency: "ZAR",
               }
             : {
-                customer,
+                customer: {
+                  ...customer,
+                  bookingDate: customer.bookingDate,
+                  bookingTime: customer.bookingTime,
+                },
                 items: items.map((item) => ({
                   name: item.product_name,
                   quantity: item.quantity,
@@ -125,6 +138,14 @@ export default function CheckoutPage() {
         <label>
           Delivery address
           <input value={customer.address} onChange={(e) => updateField("address", e.target.value)} />
+        </label>
+        <label>
+          Preferred booking date
+          <input type="date" min={minBookingDate} value={customer.bookingDate} onChange={(e) => updateField("bookingDate", e.target.value)} />
+        </label>
+        <label>
+          Preferred booking time
+          <input type="time" value={customer.bookingTime} onChange={(e) => updateField("bookingTime", e.target.value)} />
         </label>
         <label>
           Notes (optional)

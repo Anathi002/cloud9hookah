@@ -16,6 +16,15 @@ function generateOrderNumber() {
   return `ORD-${stamp}${rand}`;
 }
 
+function formatPreferredBookingWindow(customer = {}) {
+  const datePart = String(customer.bookingDate || customer.requestedDate || "").trim();
+  const timePart = String(customer.bookingTime || customer.requestedTime || "").trim();
+  if (!datePart && !timePart) return "";
+  if (!datePart) return `Preferred booking time: ${timePart}`;
+  if (!timePart) return `Preferred booking date: ${datePart}`;
+  return `Preferred booking: ${datePart} ${timePart}`;
+}
+
 function normalizeItems(items) {
   if (!Array.isArray(items) || items.length === 0) return [];
 
@@ -77,6 +86,8 @@ export async function createOrder(req, res, next) {
 
     const totalAmount = parsedItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
     const orderNumber = generateOrderNumber();
+    const preferredBookingWindow = formatPreferredBookingWindow(customer);
+    const notes = [String(customer.notes || "").trim(), preferredBookingWindow].filter(Boolean).join(" | ") || null;
 
     const client = await pool.connect();
     try {
@@ -100,7 +111,7 @@ export async function createOrder(req, res, next) {
         orderNumber,
         customerId,
         totalAmount,
-        notes: (customer.notes || "").trim() || null,
+        notes,
       });
       const orderId = orderInsert.rows[0].id;
 

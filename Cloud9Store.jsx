@@ -226,7 +226,7 @@ function Card({ p, onAdd, onOpen }) {
   );
 }
 
-function DeliveryField({ label, value, onChange, type="text", ph="" }) {
+function DeliveryField({ label, value, onChange, type="text", ph="", inputProps={} }) {
   return (
     <div style={{marginBottom:11}}>
       <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"#aaa",marginBottom:4}}>{label}</div>
@@ -235,6 +235,7 @@ function DeliveryField({ label, value, onChange, type="text", ph="" }) {
         value={value}
         onChange={e=>onChange(e.target.value)}
         placeholder={ph}
+        {...inputProps}
         style={{width:"100%",padding:"10px 11px",border:"1.5px solid #eee",borderRadius:9,
           fontSize:13,fontFamily:"-apple-system,sans-serif",outline:"none",
           boxSizing:"border-box",background:"#fafafa",color:"#111"}}
@@ -243,6 +244,35 @@ function DeliveryField({ label, value, onChange, type="text", ph="" }) {
       />
     </div>
   );
+}
+
+function formatDateInputValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatTimeInputValue(date) {
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+function createInitialCheckoutForm() {
+  const now = new Date();
+  const soon = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+  soon.setMinutes(0, 0, 0);
+  return {
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
+    suburb: "",
+    notes: "",
+    bookingDate: formatDateInputValue(now),
+    bookingTime: formatTimeInputValue(soon),
+  };
 }
 
 export default function App() {
@@ -254,7 +284,7 @@ export default function App() {
   const [paymentState,setPaymentState]=useState("");
   const [paidOrderNumber,setPaidOrderNumber]=useState("");
   const [bookingSubmitting,setBookingSubmitting]=useState(false);
-  const [form,setForm]=useState({name:"",phone:"",email:"",address:"",suburb:"",notes:""});
+  const [form,setForm]=useState(()=>createInitialCheckoutForm());
   const [toast,setToast]=useState("");
   const [heroBtnHover,setHeroBtnHover]=useState("");
   const [contactForm,setContactForm]=useState({name:"",phone:"",email:"",subject:"",message:""});
@@ -278,6 +308,7 @@ export default function App() {
   const checkoutEnabled = String(import.meta.env.VITE_CHECKOUT_ENABLED || "false").toLowerCase() === "true";
   const engagementEnabled = String(import.meta.env.VITE_ENGAGEMENT_ENABLED || "true").toLowerCase() === "true";
   const prelaunchSource = String(import.meta.env.VITE_PRELAUNCH_SOURCE || "ads-prelaunch");
+  const minBookingDate = formatDateInputValue(new Date());
   const sessionIdRef = useRef("");
 
   const cartRental=cart.reduce((s,i)=>s+i.rentalCost,0);
@@ -508,8 +539,8 @@ export default function App() {
   }
 
   function submitBookingRequest(){
-    if(!form.name || !form.phone || !form.address){
-      alert("Please fill Name, Phone & Address.");
+    if(!form.name || !form.phone || !form.address || !form.bookingDate || !form.bookingTime){
+      alert("Please fill Name, Phone, Address, Booking Date & Booking Time.");
       setStep(1);
       return;
     }
@@ -533,6 +564,8 @@ export default function App() {
           address:form.address,
           suburb:form.suburb || "",
           notes:form.notes || "",
+          bookingDate: form.bookingDate,
+          bookingTime: form.bookingTime,
         },
         items,
         totalAmount: currentTotal,
@@ -598,8 +631,8 @@ export default function App() {
       submitBookingRequest();
       return;
     }
-    if(!form.name || !form.phone || !form.address){
-      alert("Please fill Name, Phone & Address.");
+    if(!form.name || !form.phone || !form.address || !form.bookingDate || !form.bookingTime){
+      alert("Please fill Name, Phone, Address, Booking Date & Booking Time.");
       setStep(1);
       return;
     }
@@ -622,7 +655,9 @@ export default function App() {
           phone:form.phone,
           email:form.email || "",
           address:[form.address,form.suburb].filter(Boolean).join(", "),
-          notes:form.notes || "",
+          notes:[form.notes || "", `Preferred booking: ${form.bookingDate} ${form.bookingTime}`].filter(Boolean).join(" | "),
+          bookingDate: form.bookingDate,
+          bookingTime: form.bookingTime,
         },
         items,
         currency:"ZAR",
@@ -1460,9 +1495,11 @@ export default function App() {
                   <DeliveryField label="Email" value={form.email} onChange={v=>upd("email",v)} type="email" ph="you@email.com"/>
                   <DeliveryField label="Street Address *" value={form.address} onChange={v=>upd("address",v)} ph="123 Main Street"/>
                   <DeliveryField label="Suburb" value={form.suburb} onChange={v=>upd("suburb",v)} ph="Sea Point, Cape Town"/>
+                  <DeliveryField label="Preferred Booking Date *" value={form.bookingDate} onChange={v=>upd("bookingDate",v)} type="date" inputProps={{ min:minBookingDate }}/>
+                  <DeliveryField label="Preferred Booking Time *" value={form.bookingTime} onChange={v=>upd("bookingTime",v)} type="time"/>
                   <DeliveryField label="Notes" value={form.notes} onChange={v=>upd("notes",v)} ph="Gate code, preferred time..."/>
                   <button onClick={()=>{
-                    if(!form.name||!form.phone||!form.address){alert("Please fill Name, Phone & Address.");return;}
+                    if(!form.name||!form.phone||!form.address||!form.bookingDate||!form.bookingTime){alert("Please fill Name, Phone, Address, Booking Date & Booking Time.");return;}
                     setStep(2);
                     trackEvent("delivery_details_completed",{ cartItems: cart.length, total: cartTotal });
                   }}
@@ -1519,6 +1556,7 @@ export default function App() {
                   {paidOrderNumber&&<p style={{color:"#999",fontSize:11,marginBottom:6}}>{paymentState==="booking" ? "Booking Reference" : "Order Number"}: {paidOrderNumber}</p>}
                   <p style={{color:"#777",fontSize:13,marginBottom:3}}>Thanks, <strong>{form.name}</strong>!</p>
                   <p style={{color:"#bbb",fontSize:11,marginBottom:16}}>{form.address}{form.suburb?`, ${form.suburb}`:""}</p>
+                  <p style={{color:"#9a9a9a",fontSize:11,marginTop:-10,marginBottom:14}}>Preferred booking: {form.bookingDate} {form.bookingTime}</p>
                   <div style={{display:"flex",alignItems:"flex-start",gap:9,background:"#f0fff4",border:"1px solid #b2f0cb",borderRadius:11,padding:".9rem",margin:"0 0 12px",textAlign:"left"}}>
                     <span style={{fontSize:18,flexShrink:0}}>i</span>
                     <span style={{fontSize:12,color:"#1a7a40",lineHeight:1.6}}>
@@ -1531,7 +1569,7 @@ export default function App() {
                     <div style={{marginBottom:3}}>Free delivery & collection included</div>
                     <div>R{cartDeposit.toLocaleString()} deposit refunded on safe return</div>
                   </div>
-                  <button onClick={()=>{setPage("home");setStep(1);setForm({name:"",phone:"",email:"",address:"",suburb:"",notes:""});setTimeout(()=>mainRef.current?.scrollTo({top:0,behavior:"smooth"}),60);}}
+                  <button onClick={()=>{setPage("home");setStep(1);setForm(createInitialCheckoutForm());setTimeout(()=>mainRef.current?.scrollTo({top:0,behavior:"smooth"}),60);}}
                     style={{padding:"11px 26px",background:"#111",color:"#fff",border:"none",borderRadius:11,fontSize:12,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer"}}>
                     Continue Shopping
                   </button>

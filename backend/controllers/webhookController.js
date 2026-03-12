@@ -1,4 +1,5 @@
 import { pool } from "../db/pool.js";
+import { formatEmailOrderMessage, sendBusinessEmail } from "../services/emailService.js";
 import { parsePayfastAmount } from "../payments/payfast.js";
 import { sendWhatsAppOrderNotification } from "../services/whatsappService.js";
 import { verifyPayfastItn } from "../webhooks/payfastItn.js";
@@ -16,6 +17,7 @@ async function getOrderForNotification(orderId) {
         o.payfast_reference,
         c.name AS customer_name,
         c.phone AS customer_phone,
+        c.email AS customer_email,
         c.address AS customer_address
        FROM orders o
        JOIN customers c ON c.id = o.customer_id
@@ -35,6 +37,7 @@ async function getOrderForNotification(orderId) {
         o.payfast_reference,
         c.name AS customer_name,
         c.phone AS customer_phone,
+        c.email AS customer_email,
         c.address AS customer_address
        FROM orders o
        JOIN customers c ON c.id = o.customer_id
@@ -181,11 +184,22 @@ export async function handlePayfastItn(req, res, next) {
 
     const orderForNotification = normalizedStatus === "PAID" ? await getOrderForNotification(paidOrderId) : null;
     if (orderForNotification) {
-      try {
-        await sendWhatsAppOrderNotification(orderForNotification);
-      } catch (notifyErr) {
-        console.error("WhatsApp notification failed:", notifyErr.message || notifyErr);
-      }
+      void Promise.allSettled([
+        sendWhatsAppOrderNotification(orderForNotification),
+        sendBusinessEmail({
+          subject: `Cloud 9 Paid Order ${orderForNotification.order_number || ""}`.trim(),
+          text: formatEmailOrderMessage(orderForNotification),
+        }),
+      ]).then((results) => {
+        const whatsappResult = results[0];
+        const emailResult = results[1];
+        if (whatsappResult?.status === "rejected") {
+          console.error("WhatsApp notification failed:", whatsappResult.reason?.message || whatsappResult.reason);
+        }
+        if (emailResult?.status === "rejected") {
+          console.error("Order email notification failed:", emailResult.reason?.message || emailResult.reason);
+        }
+      });
     }
 
     return res.status(200).send("OK");
