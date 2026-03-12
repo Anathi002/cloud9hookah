@@ -1,3 +1,4 @@
+import axios from "axios";
 import nodemailer from "nodemailer";
 
 function formatCurrency(value) {
@@ -54,6 +55,53 @@ function getTransporter() {
   });
 
   return cachedTransporter;
+}
+
+function getEmailProvider() {
+  const configured = String(process.env.EMAIL_PROVIDER || "").trim().toLowerCase();
+  if (configured) return configured;
+  if (String(process.env.RESEND_API_KEY || "").trim()) return "resend";
+  return "smtp";
+}
+
+function getFromAddress(provider) {
+  const explicitFrom = String(process.env.EMAIL_FROM || "").trim();
+  if (explicitFrom) return explicitFrom;
+
+  if (provider === "resend") {
+    return String(process.env.RESEND_FROM || "Cloud 9 Hookah <onboarding@resend.dev>").trim();
+  }
+
+  return String(process.env.SMTP_USER || "").trim();
+}
+
+async function sendViaResend({ from, recipients, subject, text }) {
+  const apiKey = String(process.env.RESEND_API_KEY || "").trim();
+  if (!apiKey) {
+    throw new Error("Missing RESEND_API_KEY");
+  }
+
+  const apiBase = String(process.env.RESEND_API_BASE_URL || "https://api.resend.com").trim().replace(/\/+$/, "");
+  const timeout = Number(process.env.RESEND_TIMEOUT_MS || 15000);
+
+  const response = await axios.post(
+    `${apiBase}/emails`,
+    {
+      from,
+      to: recipients,
+      subject,
+      text,
+    },
+    {
+      timeout,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  return response.data;
 }
 
 export function formatEmailOrderMessage(order) {
@@ -122,17 +170,31 @@ export async function sendBusinessEmail({ subject, text }) {
     throw new Error("Missing BUSINESS_NOTIFICATION_EMAIL recipient");
   }
 
-  const transporter = getTransporter();
-  const fromAddress = String(process.env.EMAIL_FROM || process.env.SMTP_USER || "").trim();
+  const provider = getEmailProvider();
+  const fromAddress = getFromAddress(provider);
   if (!fromAddress) {
     throw new Error("Missing EMAIL_FROM (or SMTP_USER)");
   }
 
+  const normalizedSubject = String(subject || "Cloud 9 Notification").trim();
+  const normalizedText = String(text || "").trim();
+
+  if (provider === "resend") {
+    return sendViaResend({
+      from: fromAddress,
+      recipients,
+      subject: normalizedSubject,
+      text: normalizedText,
+    });
+  }
+
+  const transporter = getTransporter();
+
   return transporter.sendMail({
     from: fromAddress,
     to: recipients.join(", "),
-    subject: String(subject || "Cloud 9 Notification").trim(),
-    text: String(text || "").trim(),
+    subject: normalizedSubject,
+    text: normalizedText,
   });
 }
 
