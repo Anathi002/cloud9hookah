@@ -1,56 +1,47 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
   <defs>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Playfair+Display:wght@900&amp;family=Montserrat:wght@200&amp;display=swap');
-    </style>
-    <clipPath id="circleClip">
-      <circle cx="300" cy="300" r="230"/>
-    </clipPath>
+    <linearGradient id="hookahGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#74b7ff" />
+      <stop offset="52%" stop-color="#ab8eff" />
+      <stop offset="100%" stop-color="#df66d8" />
+    </linearGradient>
   </defs>
 
-  <!-- Transparent background - no rect -->
+  <circle cx="300" cy="300" r="230" fill="#111111" />
 
-  <!-- Filled black circle -->
-  <circle cx="300" cy="300" r="230" fill="#111111"/>
-
-  <!-- Large decorative "9" watermark inside circle -->
-  <text x="300" y="390" text-anchor="middle"
-    font-family="'Playfair Display', serif"
-    font-weight="900"
-    font-size="340"
-    fill="#ffffff"
-    opacity="0.04"
-    clip-path="url(#circleClip)">9</text>
-
-  <!-- CLOUD -->
-  <text x="300" y="272"
+  <text
+    x="300"
+    y="272"
     text-anchor="middle"
-    font-family="'Bebas Neue', sans-serif"
+    font-family="Arial, Helvetica, sans-serif"
     font-size="86"
+    font-weight="700"
     fill="#ffffff"
-    letter-spacing="22">CLOUD</text>
+    letter-spacing="22"
+  >CLOUD</text>
 
-  <!-- Thin divider line -->
-  <line x1="160" y1="288" x2="440" y2="288" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
+  <line x1="160" y1="288" x2="440" y2="288" stroke="#ffffff" stroke-width="0.8" opacity="0.55" />
 
-  <!-- 9 -->
-  <text x="300" y="370"
+  <text
+    x="300"
+    y="370"
     text-anchor="middle"
-    font-family="'Playfair Display', serif"
-    font-weight="900"
+    font-family="Georgia, 'Times New Roman', serif"
     font-size="110"
-    fill="#ffffff">9</text>
-
-  <!-- Thin divider line -->
-  <line x1="160" y1="382" x2="440" y2="382" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
-
-  <!-- HOOKAH -->
-  <text x="300" y="422"
-    text-anchor="middle"
-    font-family="'Montserrat', sans-serif"
-    font-weight="200"
-    font-size="28"
+    font-weight="700"
     fill="#ffffff"
-    letter-spacing="16">HOOKAH</text>
+  >9</text>
 
+  <line x1="160" y1="382" x2="440" y2="382" stroke="#ffffff" stroke-width="0.8" opacity="0.55" />
+
+  <text
+    x="300"
+    y="422"
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="28"
+    font-weight="300"
+    fill="url(#hookahGradient)"
+    letter-spacing="16"
+  >HOOKAH</text>
 </svg>

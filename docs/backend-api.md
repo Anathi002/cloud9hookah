@@ -12,7 +12,7 @@ If `CHECKOUT_ENABLED=false`, this returns `503` with code `CHECKOUT_DISABLED`.
   "currency": "ZAR",
   "customer": {
     "name": "John Doe",
-    "phone": "0749428500",
+    "phone": "0845642769",
     "email": "john@example.com",
     "address": "Sea Point, Cape Town",
     "notes": "Call on arrival"
@@ -65,7 +65,7 @@ Captures a booking request (pre-launch / no stock mode) without creating an orde
 {
   "customer": {
     "name": "John Doe",
-    "phone": "0749428500",
+    "phone": "0845642769",
     "email": "john@example.com",
     "address": "Sea Point, Cape Town",
     "suburb": "Sea Point",
@@ -116,3 +116,4 @@ CSV export version of the report.
 
 ## GET /health
 Health check endpoint.
+

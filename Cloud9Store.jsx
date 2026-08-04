@@ -3,12 +3,65 @@ import IMG_CAR from "./IMG_CAR.png";
 import IMAGE_BG from "./IMAGE_BG.png";
 import IMG_DOUBLE from "./IMG_DOUBLE.png";
 import IMG_SINGLE_LOCAL from "./IMG_SINGLE.png";
+import CLOUD9_LOGO from "./cloud9-hookah-logo.svg";
 
 const SINGLE_PIPE_LOCAL_IMAGE = IMG_SINGLE_LOCAL;
 const PRODUCTS = [
-  { id:1, name:"Single Pipe",  tag:"SINGLE",   img:SINGLE_PIPE_LOCAL_IMAGE, fallbackImg:IMG_DOUBLE, hoses:1, rentalPer4h:200, deposit:900,  desc:"Solo sessions & intimate vibes" },
-  { id:2, name:"Double Pipe",  tag:"POPULAR",  img:IMG_DOUBLE, hoses:2, rentalPer4h:380, deposit:1500, desc:"Share the moment with a friend" },
-  { id:3, name:"Car Hubbly",   tag:"NEW",     img:IMG_CAR,    hoses:1, rentalPer4h:150, deposit:300,  desc:"Smoke safely in your car" },
+  {
+    id:1,
+    name:"Single Pipe",
+    tag:"Popular",
+    img:SINGLE_PIPE_LOCAL_IMAGE,
+    fallbackImg:IMG_DOUBLE,
+    hoses:1,
+    rentalPer4h:150,
+    rentalBaseHours:1,
+    minHours:1,
+    hourStep:1,
+    deposit:900,
+    desc:"Best for solo sessions, couples, hotel stays, and calm nights in.",
+    includedItems:[
+      "1 pre-packed head",
+      "3 coconut coals",
+      "Full setup when we arrive",
+    ],
+  },
+  {
+    id:2,
+    name:"Double Pipe",
+    tag:"Best Seller",
+    img:IMG_DOUBLE,
+    hoses:2,
+    rentalPer4h:200,
+    rentalBaseHours:1,
+    minHours:1,
+    hourStep:1,
+    deposit:1500,
+    desc:"The most-booked setup for friends, couples, and small-group sessions.",
+    includedItems:[
+      "1 pre-packed head",
+      "3 coconut coals",
+      "Full setup when we arrive",
+    ],
+  },
+  {
+    id:3,
+    name:"Car Hubbly",
+    tag:"Car Experience",
+    img:IMG_CAR,
+    hoses:1,
+    rentalPer4h:200,
+    rentalBaseHours:2,
+    minHours:2,
+    hourStep:2,
+    deposit:300,
+    desc:"Made for scenic drives, beach views, and road-trip moments around Cape Town.",
+    includedItems:[
+      "1 pre-packed head",
+      "3 coconut coals",
+      "Full setup when we arrive",
+    ],
+  },
 ];
 
 const COMBO_PACKAGES = [
@@ -16,7 +69,9 @@ const COMBO_PACKAGES = [
     id: "party",
     title: "Cloud Party Combo",
     basePrice: 580,
+    tierExtra: 0,
     pipes: 2,
+    subtitle: "Best for birthdays, apartments, and easy-host setups.",
     lines: [
       "2 Hookah pipes",
       "6 prepared heads",
@@ -31,7 +86,9 @@ const COMBO_PACKAGES = [
     id: "vip",
     title: "Cloud VIP Combo",
     basePrice: 750,
+    tierExtra: 170,
     pipes: 2,
+    subtitle: "For elevated hosting with extra flavour and longer-lasting prep.",
     lines: [
       "2 Hookah pipes",
       "6 prepared heads",
@@ -46,7 +103,9 @@ const COMBO_PACKAGES = [
     id: "vvip",
     title: "Cloud VVIP Combo",
     basePrice: 1200,
+    tierExtra: 620,
     pipes: 3,
+    subtitle: "For premium events that need presence, scale, and convenience.",
     lines: [
       "3 Hookah pipes",
       "8 prepared heads",
@@ -59,16 +118,10 @@ const COMBO_PACKAGES = [
   },
 ];
 
-const COMBO_FLAVOURS = [
-  "Double Apple",
-  "Mint",
-  "Grape",
-  "Blueberry",
-  "Watermelon",
-];
-const COMBO_MAX_FLAVOURS = 3;
 const COMBO_MIN_HOURS = 4;
 const COMBO_HOURS_STEP = 4;
+const COMBO_DISCOUNT_RATE = 0.10;
+const EVENT_SERVICE_RATE = 50;
 
 const SI = {
   fb:<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>,
@@ -77,15 +130,138 @@ const SI = {
   x:<svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>,
 };
 const CONTACT_EMAIL = "cloud.hubbly@gmail.com";
-const WA_LINK = "https://wa.me/27749428500";
-const POLICY_ITEMS = [
-  { kind:"rental", title:"Rental Fee", text:"Car Hubbly R150 | Single R200 | Double R380 (per 4h)." },
-  { kind:"deposit", title:"Deposit", text:"Car Hubbly R300 | Single R900 | Double R1,500. Fully refundable." },
-  { kind:"refund", title:"Instant Refund", text:"Return undamaged -> full deposit is refunded immediately." },
-  { kind:"damage", title:"Damage", text:"Damage or missing parts are deducted from the deposit." },
-  { kind:"delivery", title:"Free Delivery", text:"We deliver and collect every order. Always free." },
-  { kind:"time", title:"Extensions", text:"Need extra time? Contact us before rental ends." },
+const WA_LINK = "https://wa.me/27845642769";
+const TRUST_PILLS = [
+  "Free delivery & collection in Cape Town",
+  "Professionally cleaned before every rental",
+  "Available 7 days a week",
 ];
+const HOW_IT_WORKS = [
+  {
+    step: "1",
+    title: "Choose your setup",
+    text: "Pick the rental or combo that matches your night, guest count, and vibe.",
+  },
+  {
+    step: "2",
+    title: "Send your booking request",
+    text: "Choose your preferred date and time, then leave your delivery details.",
+  },
+  {
+    step: "3",
+    title: "We confirm and deliver",
+    text: "Our team confirms availability, delivers your setup, and collects it after use.",
+  },
+];
+const SERVICE_PROMISES = [
+  {
+    title: "Delivered and collected by our team",
+    text: "Customers do not need to chase transport or setup logistics. We handle the handoff and collection directly.",
+  },
+  {
+    title: "Fast confirmation before the booking day",
+    text: "Every request is reviewed by a real person so the customer knows exactly where they stand before delivery.",
+  },
+  {
+    title: "Refundable holds only where risk is higher",
+    text: "Deposits are clearly shown before booking and returned in full when the setup comes back safely.",
+  },
+];
+const GUARANTEE_CARDS = [
+  {
+    title: "Clear pricing before booking",
+    text: "Rental, security hold, delivery, and add-ons are shown before the customer submits.",
+  },
+  {
+    title: "No card payment surprise",
+    text: "The website captures booking intent first, then the team confirms the next step directly.",
+  },
+  {
+    title: "Real support if plans change",
+    text: "Customers can contact the team to adjust timing, confirm availability, or choose the right setup.",
+  },
+];
+const REVIEW_CARDS = [
+  {
+    name: "Athenkosi",
+    area: "Sea Point",
+    rating: 5,
+    text: "Fast delivery, clean pipe, and the setup was ready for our Airbnb night.",
+  },
+  {
+    name: "Mila",
+    area: "Cape Town CBD",
+    rating: 5,
+    text: "The double pipe was perfect for friends. Smooth smoke and easy collection.",
+  },
+  {
+    name: "Lutho",
+    area: "Camps Bay",
+    rating: 5,
+    text: "Simple booking, premium feel, and the team confirmed everything quickly.",
+  },
+];
+const LEAD_INTEREST_OPTIONS = [
+  "Birthday",
+  "Date Night",
+  "Private House Party",
+  "Airbnb / Hotel Stay",
+  "Just Browsing",
+];
+const FAQ_ITEMS = [
+  {
+    question: "How does booking work?",
+    answer: "Choose your setup, submit your delivery details and preferred date, and we confirm availability directly with you.",
+  },
+  {
+    question: "Do you deliver and collect?",
+    answer: "Yes. Delivery and collection are included across Cape Town for every confirmed booking.",
+  },
+  {
+    question: "Is there still a deposit?",
+    answer: "Yes. Single Pipe has a R900 refundable deposit, Double Pipe has a R1,500 refundable deposit, and Car Hubbly has a R300 refundable deposit.",
+  },
+  {
+    question: "When do I pay?",
+    answer: "For the current booking flow, no card payment is taken on the website. We confirm the booking with you first and guide the next step directly.",
+  },
+  {
+    question: "Can I book for a later date or change my time?",
+    answer: "Yes. Choose your preferred date and time in the booking step, and contact us early if you need to adjust the slot.",
+  },
+];
+const POLICY_ITEMS = [
+  { kind:"rental", title:"Rental Fee", text:"Single Pipe R150 per hour | Double Pipe R200 per hour | Car Hubbly R200 per 2 hours." },
+  { kind:"deposit", title:"Security Hold", text:"Single Pipe R900 | Double Pipe R1,500 | Car Hubbly R300. Fully refundable after safe return." },
+  { kind:"refund", title:"Refundable", text:"Return the equipment safely and the security hold is refunded in full." },
+  { kind:"damage", title:"Damage Policy", text:"Damage, missing parts, or severe misuse may be charged against the refundable hold." },
+  { kind:"delivery", title:"Free Delivery", text:"We deliver and collect every order. Always free." },
+  { kind:"time", title:"Booking Support", text:"Need more time or help choosing the right setup? Contact us before your rental ends." },
+];
+const createInitialLeadForm = () => ({
+  name: "",
+  email: "",
+  phone: "",
+  interest: LEAD_INTEREST_OPTIONS[0],
+});
+const createInitialReviewForm = () => ({
+  name: "",
+  rating: "5",
+  productRented: "Single Pipe",
+  message: "",
+});
+
+const formatMoney = (value) => `R${Number(value || 0).toLocaleString()}`;
+const getDepositCopy = (amount) => amount > 0 ? formatMoney(amount) : "No deposit";
+const getDepositNote = (amount) => amount > 0 ? "Refundable security hold" : "Launch offer: no deposit";
+const getProductBaseHours = (product) => Number(product?.rentalBaseHours || 4);
+const getProductMinHours = (product) => Number(product?.minHours || getProductBaseHours(product));
+const getProductHourStep = (product) => Number(product?.hourStep || getProductBaseHours(product));
+const getProductRentalLabel = (product) => `${formatMoney(product?.rentalPer4h)} / ${getProductBaseHours(product)}h`;
+const calculateProductRental = (product, hours) => {
+  const baseHours = Math.max(1, getProductBaseHours(product));
+  return Number(product?.rentalPer4h || 0) * (Number(hours || baseHours) / baseHours);
+};
 
 function PolicyGlyph({ kind }) {
   const base = { width:18, height:18, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"1.9", strokeLinecap:"round", strokeLinejoin:"round", "aria-hidden":true };
@@ -162,27 +338,27 @@ function Tip({ text }) {
 
 function Card({ p, onAdd, onOpen }) {
   const [added,setAdded]=useState(false);
-  const hours=4;
-  const rental=p.rentalPer4h;
+  const hours=getProductMinHours(p);
+  const rental=calculateProductRental(p, hours);
   const total=rental+p.deposit;
-  const tagC={"NEW":"#7c3aed","POPULAR":"#111","Popular":"#111","Group":"#166534"};
+  const tagC={"Popular":"#111","Car Experience":"#166534","Best Seller":"#111","Group":"#166534","Plain Rental":"#4b5563"};
 
   function handleAdd(){
-    onAdd(p,hours,rental,total);
+    onAdd(p,hours,rental,"Any flavour");
     setAdded(true);
     setTimeout(()=>setAdded(false),1800);
   }
 
   return (
-    <article style={{background:"#fff",borderRadius:16,overflow:"hidden",boxShadow:"0 4px 18px rgba(0,0,0,.08)",width:232,flexShrink:0,scrollSnapAlign:"start",border:"1px solid #eee"}}>
+    <article style={{background:"#fff",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 18px rgba(0,0,0,.08)",width:232,flexShrink:0,scrollSnapAlign:"start",border:"1px solid #eee",position:"relative"}}>
       {p.tag&&(
-        <div style={{padding:"10px 12px 0"}}>
-          <span style={{display:"inline-block",background:tagC[p.tag]||"#555",color:"#fff",fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",padding:"3px 9px",borderRadius:99}}>
+        <div style={{position:"absolute",top:8,left:10,zIndex:2}}>
+          <span style={{display:"inline-block",background:tagC[p.tag]||"#555",color:"#fff",fontSize:9,fontWeight:800,letterSpacing:".12em",textTransform:"uppercase",padding:"3px 9px",borderRadius:99}}>
             {p.tag}
           </span>
         </div>
       )}
-      <button onClick={()=>onOpen(p)} style={{position:"relative",background:"#f2f2f2",height:172,display:"flex",alignItems:"center",justifyContent:"center",border:"none",width:"100%",cursor:"pointer",padding:10}}>
+      <button onClick={()=>onOpen(p)} style={{position:"relative",background:"#f2f2f2",height:170,display:"flex",alignItems:"center",justifyContent:"center",border:"none",width:"100%",cursor:"pointer",padding:10}}>
         <img
           src={p.img}
           alt={p.name}
@@ -199,22 +375,23 @@ function Card({ p, onAdd, onOpen }) {
           <span style={{fontWeight:800,fontSize:15,color:"#111"}}>{p.name}</span>
           <span style={{fontSize:9,color:"#ccc"}}>{p.hoses} hose{p.hoses>1?"s":""}</span>
         </div>
-        <p style={{fontSize:11,color:"#aaa",margin:"0 0 10px",lineHeight:1.4,minHeight:30}}>{p.desc}</p>
-
-        <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#666",marginBottom:8}}>
-          <span>Rental (4h)</span>
-          <strong>R{rental.toLocaleString()}</strong>
-        </div>
+        <p style={{fontSize:11,color:"#666",margin:"0 0 5px",lineHeight:1.45,minHeight:34}}>{p.desc}</p>
+        <div style={{height:8}}/>
 
         <div style={{background:"#fafafa",border:"1px solid #f0f0f0",borderRadius:10,padding:10}}>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#666",marginBottom:5}}>
-            <span style={{display:"inline-flex",alignItems:"center",gap:4}}>Deposit <Tip text="Full deposit is refunded when the pipe is returned undamaged." /></span>
-            <strong>R{p.deposit.toLocaleString()}</strong>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#666",marginBottom:8}}>
+            <span>Rental ({hours}h)</span>
+            <strong>{formatMoney(rental)}</strong>
           </div>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#666",marginBottom:5}}>
+            <span style={{display:"inline-flex",alignItems:"center",gap:4}}>Security hold <Tip text="A refundable security hold applies only where equipment risk is higher." /></span>
+            <strong>{getDepositCopy(p.deposit)}</strong>
+          </div>
+          <div style={{fontSize:10,color:"#969696",marginBottom:6}}>{getDepositNote(p.deposit)}</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:"1px solid #ececec",paddingTop:7}}>
-            <span style={{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:".05em",color:"#999"}}>Total now</span>
+            <span style={{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:".05em",color:"#999"}}>Total Now</span>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:17,fontWeight:900,color:"#111"}}>R{total.toLocaleString()}</span>
+              <span style={{fontSize:17,fontWeight:900,color:"#111"}}>{formatMoney(total)}</span>
               <button onClick={handleAdd} aria-label={`Add ${p.name}`} style={{width:29,height:29,borderRadius:"50%",border:"none",background:added?"#166834":"#111",color:"#fff",fontSize:21,lineHeight:1,cursor:"pointer",display:"grid",placeItems:"center"}}>
                 +
               </button>
@@ -288,6 +465,7 @@ export default function App() {
   const [cart,setCart]=useState([]);
   const [page,setPage]=useState("home");
   const [menuOpen,setMenuOpen]=useState(false);
+  const [howItWorksPopupOpen,setHowItWorksPopupOpen]=useState(false);
   const [step,setStep]=useState(1);
   const [paying,setPaying]=useState(false);
   const [paymentState,setPaymentState]=useState("");
@@ -297,14 +475,29 @@ export default function App() {
   const [toast,setToast]=useState("");
   const [heroBtnHover,setHeroBtnHover]=useState("");
   const [contactForm,setContactForm]=useState({name:"",phone:"",email:"",subject:"",message:""});
+  const [leadForm,setLeadForm]=useState(()=>createInitialLeadForm());
+  const [leadSubmitting,setLeadSubmitting]=useState(false);
+  const [reviewForm,setReviewForm]=useState(()=>createInitialReviewForm());
+  const [reviewSubmitting,setReviewSubmitting]=useState(false);
+  const [reviewPopupOpen,setReviewPopupOpen]=useState(false);
   const [activeProduct,setActiveProduct]=useState(null);
-  const [activeHours,setActiveHours]=useState(4);
+  const [activeHours,setActiveHours]=useState(1);
+  const [activeProductFlavourText,setActiveProductFlavourText]=useState("");
+  const [activeProductAnyFlavour,setActiveProductAnyFlavour]=useState(true);
   const [activeCombo,setActiveCombo]=useState(null);
-  const [comboFlavours,setComboFlavours]=useState([]);
+  const [comboFlavourText,setComboFlavourText]=useState("");
+  const [comboAnyFlavour,setComboAnyFlavour]=useState(true);
   const [comboHours,setComboHours]=useState(COMBO_MIN_HOURS);
-  const [comboWeed,setComboWeed]=useState(false);
+  const [comboPipeTypes,setComboPipeTypes]=useState([]);
+  const [comboEventService,setComboEventService]=useState(false);
+  const [comboEventPipes,setComboEventPipes]=useState("");
+  const [comboEventPipeTypes,setComboEventPipeTypes]=useState("");
+  const [comboEventFlavours,setComboEventFlavours]=useState("");
   const [cartHourEditor,setCartHourEditor]=useState(null);
   const [homeTopBarDark,setHomeTopBarDark]=useState(true);
+  const [showDesktopNav,setShowDesktopNav]=useState(()=>(
+    typeof window !== "undefined" ? window.innerWidth >= 900 : false
+  ));
   const toastTm=useRef(null);
   const mainRef=useRef(null);
   const heroRef=useRef(null);
@@ -317,6 +510,8 @@ export default function App() {
   const checkoutEnabled = String(import.meta.env.VITE_CHECKOUT_ENABLED || "false").toLowerCase() === "true";
   const engagementEnabled = String(import.meta.env.VITE_ENGAGEMENT_ENABLED || "true").toLowerCase() === "true";
   const prelaunchSource = String(import.meta.env.VITE_PRELAUNCH_SOURCE || "ads-prelaunch");
+  const metaPixelId = String(import.meta.env.VITE_META_PIXEL_ID || "").trim();
+  const gtagId = String(import.meta.env.VITE_GTAG_ID || "").trim();
   const minBookingDate = getBookingMinDate();
   const bookingDateLocked = String(form.bookingDate || "") < minBookingDate;
   const sessionIdRef = useRef("");
@@ -324,30 +519,77 @@ export default function App() {
   const cartRental=cart.reduce((s,i)=>s+i.rentalCost,0);
   const cartDeposit=cart.reduce((s,i)=>s+i.deposit,0);
   const cartTotal=cartRental+cartDeposit;
-  const activeRental=activeProduct?activeProduct.rentalPer4h*(activeHours/4):0;
+  const hasCartDeposit = cartDeposit > 0;
+  const activeRental=activeProduct?calculateProductRental(activeProduct, activeHours):0;
   const activeTotalNow=activeRental+(activeProduct?.deposit||0);
-  const doublePipeDeposit = PRODUCTS.find(p=>p.name==="Double Pipe")?.deposit || 1500;
-  const comboAddOnPrice = 105;
-  const activeComboAddOn = comboWeed ? comboAddOnPrice : 0;
-  const activeComboBaseRental = activeCombo ? activeCombo.basePrice * (comboHours / COMBO_MIN_HOURS) : 0;
-  const activeComboRental = activeComboBaseRental + activeComboAddOn;
-  const activeComboDeposit = activeCombo ? activeCombo.pipes * doublePipeDeposit : 0;
-  const activeComboTotal = activeComboRental + activeComboDeposit;
   const roundMoney = (value) => Number(Number(value).toFixed(2));
+  const doublePipeDeposit = PRODUCTS.find(p=>p.name==="Double Pipe")?.deposit || 1500;
+  const activeComboPricing = activeCombo
+    ? calculateComboPricing(activeCombo, comboPipeTypes, comboHours, comboEventService)
+    : {baseRental:0,discount:0,eventServiceFee:0,rentalCost:0,deposit:0,totalNow:0,pipeLabel:""};
+  const activeComboBaseRental = activeComboPricing.baseRental;
+  const activeComboDiscount = activeComboPricing.discount;
+  const comboEventServiceFee = activeComboPricing.eventServiceFee;
+  const activeComboRental = activeComboPricing.rentalCost;
+  const activeComboDeposit = activeComboPricing.deposit;
+  const activeComboTotal = activeComboPricing.totalNow;
+
+  function getComboDefaultPipeTypes(combo){
+    return Array.from({length:Number(combo?.pipes || 0)}, () => "Single Pipe");
+  }
+
+  function getComboPipeProduct(type){
+    return PRODUCTS.find(product=>product.name === type) || PRODUCTS[0];
+  }
+
+  function getPipeTypeSummary(types){
+    const counts = types.reduce((acc,type)=>{
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    },{});
+    return Object.entries(counts).map(([type,count])=>`${count}x ${type}`).join(", ");
+  }
+
+  function calculateComboPricing(combo,types,hours,withEventService=false){
+    const safeTypes = (types?.length ? types : ["Single Pipe"]).map(type=>getComboPipeProduct(type).name);
+    const safeHours = Math.max(COMBO_MIN_HOURS, Number(hours || COMBO_MIN_HOURS));
+    const baseRental = roundMoney(safeTypes.reduce((sum,type)=>{
+      const product = getComboPipeProduct(type);
+      return sum + calculateProductRental(product, safeHours);
+    },0));
+    const discount = roundMoney(baseRental * COMBO_DISCOUNT_RATE);
+    const tierExtra = roundMoney(Number(combo?.tierExtra || 0));
+    const eventServiceFee = withEventService ? roundMoney(safeHours * EVENT_SERVICE_RATE) : 0;
+    const rentalCost = roundMoney(baseRental - discount + tierExtra + eventServiceFee);
+    const deposit = roundMoney(safeTypes.reduce((sum,type)=>sum + Number(getComboPipeProduct(type).deposit || 0),0));
+    return {
+      baseRental,
+      discount,
+      tierExtra,
+      eventServiceFee,
+      rentalCost,
+      deposit,
+      totalNow: roundMoney(rentalCost + deposit),
+      pipeLabel: getPipeTypeSummary(safeTypes),
+      pipeTypes: safeTypes,
+    };
+  }
 
   function toast_(msg){ setToast(msg); clearTimeout(toastTm.current); toastTm.current=setTimeout(()=>setToast(""),2000); }
-  function addToCart(p,hours,rentalCost){
+  function addToCart(p,hours,rentalCost,flavourText="Any flavour"){
     const unitRentalCost = roundMoney(rentalCost);
     const unitDeposit = roundMoney(Number(p.deposit || 0));
     const quantity = 1;
     const nextRental = roundMoney(unitRentalCost * quantity);
     const nextDeposit = roundMoney(unitDeposit * quantity);
+    const flavour = String(flavourText || "").trim() || "Any flavour";
     setCart(b=>[...b,{
       ...p,
       hours,
       quantity,
       unitRentalCost,
       unitDeposit,
+      flavour,
       rentalCost: nextRental,
       deposit: nextDeposit,
       totalNow: roundMoney(nextRental + nextDeposit),
@@ -385,22 +627,19 @@ export default function App() {
   }
   function calcUnitRentalCostForHours(item,nextHours){
     if (item.isCombo) {
-      const addOn = item.weedBag ? comboAddOnPrice : 0;
-      const currentHours = Math.max(COMBO_MIN_HOURS, Number(item.hours || COMBO_MIN_HOURS));
-      const fallbackBase = (Number(item.unitRentalCost || 0) - addOn) * (COMBO_MIN_HOURS / currentHours);
-      const comboBasePrice = Number(item.comboBasePrice || fallbackBase || 0);
-      return roundMoney((comboBasePrice * (nextHours / COMBO_MIN_HOURS)) + addOn);
+      return calculateComboPricing(item, item.comboPipeTypes || getComboDefaultPipeTypes(item), nextHours, Boolean(item.comboEventService)).rentalCost;
     }
-    const currentHours = Math.max(4, Number(item.hours || 4));
-    const fallbackRate = (Number(item.unitRentalCost || 0) * 4) / currentHours;
-    const rentalPer4h = Number(item.rentalPer4h || fallbackRate || 0);
-    return roundMoney(rentalPer4h * (nextHours / 4));
+    const baseHours = Math.max(1, Number(item.rentalBaseHours || 4));
+    const currentHours = Math.max(baseHours, Number(item.hours || baseHours));
+    const fallbackRate = (Number(item.unitRentalCost || 0) * baseHours) / currentHours;
+    const rentalRate = Number(item.rentalPer4h || fallbackRate || 0);
+    return roundMoney(rentalRate * (nextHours / baseHours));
   }
   function openCartHoursEditor(index){
     const item = cart[index];
     if (!item) return;
-    const min = item.isCombo ? COMBO_MIN_HOURS : 4;
-    const step = item.isCombo ? COMBO_HOURS_STEP : 4;
+    const min = item.isCombo ? COMBO_MIN_HOURS : getProductMinHours(item);
+    const step = item.isCombo ? COMBO_HOURS_STEP : getProductHourStep(item);
     setCartHourEditor({
       index,
       min,
@@ -441,37 +680,45 @@ export default function App() {
     setCartHourEditor(null);
     toast_("Rental hours updated.");
   }
-  function openProduct(p){ setActiveProduct(p); setActiveHours(4); }
+  function openProduct(p){
+    setActiveProduct(p);
+    setActiveHours(getProductMinHours(p));
+    setActiveProductFlavourText("");
+    setActiveProductAnyFlavour(true);
+  }
   function openCombo(combo){
     setActiveCombo(combo);
-    setComboFlavours([]);
+    setComboFlavourText("");
+    setComboAnyFlavour(true);
     setComboHours(COMBO_MIN_HOURS);
-    setComboWeed(false);
+    setComboPipeTypes(getComboDefaultPipeTypes(combo));
+    setComboEventService(false);
+    setComboEventPipes(String(combo.pipes));
+    setComboEventPipeTypes(getPipeTypeSummary(getComboDefaultPipeTypes(combo)));
+    setComboEventFlavours("");
   }
-  function toggleComboFlavour(flavour){
-    setComboFlavours(curr=>{
-      if (curr.includes(flavour)) return curr.filter(f=>f!==flavour);
-      if (curr.length >= COMBO_MAX_FLAVOURS) {
-        toast_(`Select up to ${COMBO_MAX_FLAVOURS} flavours.`);
-        return curr;
-      }
-      return [...curr, flavour];
-    });
+  function updateComboPipeType(index,type){
+    setComboPipeTypes(current=>current.map((item,idx)=>idx===index ? type : item));
+    setComboEventPipeTypes(getPipeTypeSummary(comboPipeTypes.map((item,idx)=>idx===index ? type : item)));
   }
   function comboLine(item){
-    const flavourText = item.flavours?.length ? item.flavours.join(", ") : (item.flavour || "Any flavour");
+    const flavourText = item.flavour || "Any flavour";
     const extras = [];
     extras.push(`Flavour: ${flavourText}`);
-    if (item.weedBag) extras.push(`Weed bag +R${comboAddOnPrice}`);
+    if (item.comboPipeSummary) extras.push(`Pipes: ${item.comboPipeSummary}`);
+    if (item.comboEventService) extras.push(`Event service +${formatMoney(Number(item.eventServiceFee || 0))}`);
+    if (item.eventPipes) extras.push(`Event pipes: ${item.eventPipes}`);
+    if (item.eventPipeTypes) extras.push(`Pipe types: ${item.eventPipeTypes}`);
+    if (item.eventFlavours) extras.push(`Event flavours: ${item.eventFlavours}`);
     return `${item.name} - ${item.hours}h${extras.length ? ` | ${extras.join(" | ")}` : ""}`;
   }
   function addComboToCart(){
     if (!activeCombo) return;
-    const rentalCost = activeCombo.basePrice * (comboHours / COMBO_MIN_HOURS) + (comboWeed ? comboAddOnPrice : 0);
-    const deposit = activeCombo.pipes * doublePipeDeposit;
-    const totalNow = rentalCost + deposit;
-    const selectedFlavours = comboFlavours.slice(0, COMBO_MAX_FLAVOURS);
-    const flavourLabel = selectedFlavours.length ? selectedFlavours.join(", ") : "Any flavour";
+    const pricing = calculateComboPricing(activeCombo, comboPipeTypes, comboHours, comboEventService);
+    const rentalCost = pricing.rentalCost;
+    const deposit = pricing.deposit;
+    const totalNow = pricing.totalNow;
+    const flavourLabel = comboAnyFlavour ? "Any flavour" : (comboFlavourText.trim() || "Any flavour");
     setCart(b=>[...b,{
       id:`combo-${activeCombo.id}-${Date.now()}`,
       name:activeCombo.title,
@@ -481,9 +728,17 @@ export default function App() {
       desc:"Combo package",
       isCombo:true,
       flavour:flavourLabel,
-      flavours:selectedFlavours,
-      weedBag:comboWeed,
-      comboBasePrice:activeCombo.basePrice,
+      comboPipeTypes:pricing.pipeTypes,
+      comboPipeSummary:pricing.pipeLabel,
+      comboEventService,
+      eventServiceFee:pricing.eventServiceFee,
+      comboDiscount:pricing.discount,
+      comboBaseRental:pricing.baseRental,
+      tierExtra:pricing.tierExtra,
+      eventPipes: comboEventPipes.trim(),
+      eventPipeTypes: comboEventPipeTypes.trim(),
+      eventFlavours: comboEventFlavours.trim(),
+      comboBasePrice:pricing.baseRental - pricing.discount + pricing.tierExtra,
       quantity:1,
       unitRentalCost:rentalCost,
       unitDeposit:deposit,
@@ -499,6 +754,8 @@ export default function App() {
   function goSection(ref){ setMenuOpen(false); setTimeout(()=>{ setPage("home"); setTimeout(()=>ref?.current?.scrollIntoView({behavior:"smooth",block:"start"}),80); },300); }
   const upd=(k,v)=>setForm(f=>({...f,[k]:v}));
   const updContact=(k,v)=>setContactForm(f=>({...f,[k]:v}));
+  const updLead=(k,v)=>setLeadForm(f=>({...f,[k]:v}));
+  const updReview=(k,v)=>setReviewForm(f=>({...f,[k]:v}));
   function getSessionId(){
     if(sessionIdRef.current) return sessionIdRef.current;
     try {
@@ -532,14 +789,109 @@ export default function App() {
       body:JSON.stringify(payload),
       keepalive:true,
     }).catch(()=>{});
+
+    if (typeof window !== "undefined" && typeof window.fbq === "function") {
+      window.fbq("trackCustom", eventName, meta);
+    }
+    if (typeof window !== "undefined" && typeof window.gtag === "function") {
+      window.gtag("event", eventName, meta);
+    }
+  }
+
+  function submitLeadCapture(e){
+    e.preventDefault();
+    const name = leadForm.name.trim();
+    const email = leadForm.email.trim();
+    const phone = leadForm.phone.trim();
+    const interest = leadForm.interest.trim();
+
+    if(!name || !email){
+      alert("Please fill your name and email.");
+      return;
+    }
+
+    setLeadSubmitting(true);
+    fetch(`${apiBaseUrl}/engagement/lead`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({
+        name,
+        email,
+        phone,
+        interest,
+        source: prelaunchSource,
+        page,
+      }),
+    })
+      .then(async res=>{
+        const data = await res.json().catch(()=>({}));
+        if(!res.ok){
+          throw new Error(data?.error || "Could not capture your details");
+        }
+        toast_("Thanks. We will keep you in the loop.");
+        trackEvent("lead_capture_submitted",{ interest, hasPhone: Boolean(phone) });
+        setLeadForm(createInitialLeadForm());
+      })
+      .catch(err=>{
+        console.error("Lead capture failed:", err);
+        alert(String(err?.message || "Could not capture your details."));
+      })
+      .finally(()=>setLeadSubmitting(false));
+  }
+
+  function submitCustomerReview(e){
+    e.preventDefault();
+    const name = reviewForm.name.trim();
+    const message = reviewForm.message.trim();
+    const rating = Number(reviewForm.rating);
+
+    if(!name || !message || rating < 1 || rating > 5){
+      alert("Please add your name, rating, and review message.");
+      return;
+    }
+
+    setReviewSubmitting(true);
+    fetch(`${apiBaseUrl}/reviews`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({
+        name,
+        rating,
+        message,
+        productRented: reviewForm.productRented,
+        source: "website",
+      }),
+    })
+      .then(async res=>{
+        const data = await res.json().catch(()=>({}));
+        if(!res.ok){
+          throw new Error(data?.details || data?.error || "Could not submit review");
+        }
+        toast_("Review sent for approval.");
+        trackEvent("review_submitted",{ rating, productRented: reviewForm.productRented });
+        setReviewForm(createInitialReviewForm());
+        setReviewPopupOpen(false);
+      })
+      .catch(err=>{
+        console.error("Review submission failed:", err);
+        const msg = String(err?.message || "");
+        if (/failed to fetch/i.test(msg)) {
+          alert(`Could not reach review server at ${apiBaseUrl}.`);
+        } else {
+          alert(msg || "Could not submit review.");
+        }
+      })
+      .finally(()=>setReviewSubmitting(false));
   }
 
   function buildCheckoutItems(){
     return cart.map(item=>{
       const quantity = Math.max(1, Number(item.quantity || 1));
       const unitTotal = roundMoney(Number(item.totalNow || 0) / quantity);
+      const flavourText = item.flavours?.length ? item.flavours.join(", ") : (item.flavour || "Any flavour");
+      const productName = item.isCombo ? comboLine(item) : `${item.name} - ${item.hours}h | Flavour: ${flavourText}`;
       return {
-        product_name: item.name,
+        product_name: productName,
         quantity,
         hours: Number(item.hours || 0),
         price: unitTotal,
@@ -555,7 +907,7 @@ export default function App() {
       return;
     }
     if(bookingDateLocked){
-      alert("Bookings are available from 16 March 2026 onward.");
+      alert(`Bookings are available from ${minBookingDate} onward.`);
       return;
     }
     if(cart.length===0){
@@ -804,35 +1156,103 @@ export default function App() {
     };
   },[page]);
 
+  useEffect(()=>{
+    const syncViewportNav = ()=>{
+      setShowDesktopNav(window.innerWidth >= 900);
+    };
+    syncViewportNav();
+    window.addEventListener("resize", syncViewportNav);
+    return ()=>window.removeEventListener("resize", syncViewportNav);
+  },[]);
+
+  useEffect(()=>{
+    if(showDesktopNav && menuOpen){
+      setMenuOpen(false);
+    }
+  },[showDesktopNav, menuOpen]);
+
+  useEffect(()=>{
+    if(typeof window === "undefined") return;
+
+    if(metaPixelId && typeof window.fbq !== "function"){
+      window.fbq = function () {
+        window.fbq.callMethod
+          ? window.fbq.callMethod.apply(window.fbq, arguments)
+          : window.fbq.queue.push(arguments);
+      };
+      window.fbq.queue = [];
+      window.fbq.loaded = true;
+      window.fbq.version = "2.0";
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = "https://connect.facebook.net/en_US/fbevents.js";
+      document.head.appendChild(script);
+      window.fbq("init", metaPixelId);
+      window.fbq("track", "PageView");
+    }
+
+    if(gtagId && typeof window.gtag !== "function"){
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function(){ window.dataLayer.push(arguments); };
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gtagId)}`;
+      document.head.appendChild(script);
+      window.gtag("js", new Date());
+      window.gtag("config", gtagId);
+    }
+  },[metaPixelId, gtagId]);
+
   const TopBar=({dark=false})=>(
-    <div style={{position:"absolute",top:"calc(env(safe-area-inset-top, 0px) + 8px)",left:0,right:0,height:48,
-      display:"grid",gridTemplateColumns:"48px 1fr 48px",
-      alignItems:"center",paddingLeft:14,paddingRight:14,zIndex:40}}>
-      <button onClick={()=>setMenuOpen(true)}
-        style={{width:36,height:36,background:dark?"transparent":"rgba(0,0,0,.38)",
-          border:"none",borderRadius:10,cursor:"pointer",
-          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4.5,
-          backdropFilter:dark?"none":"blur(8px)"}}>
-        {[0,1,2].map(i=><span key={i} style={{width:15,height:1.5,background:"#fff",borderRadius:2,display:"block"}}/>)}
-      </button>
-      <span style={{textAlign:"center",fontFamily:"Georgia,serif",fontWeight:900,
-        fontSize:16,color:dark?"#fff":"#111",letterSpacing:".2em",userSelect:"none",cursor:"pointer"}}
-        onClick={()=>{setPage("home");setTimeout(()=>mainRef.current?.scrollTo({top:0,behavior:"smooth"}),60);}}>
-        CLOUD 9
-      </span>
-      <button onClick={()=>setPage("cart")}
-        style={{width:36,height:36,background:dark?"transparent":"rgba(0,0,0,.38)",
+    <div style={{position:"absolute",top:showDesktopNav?"calc(env(safe-area-inset-top, 0px) + 14px)":"calc(env(safe-area-inset-top, 0px) + 4px)",left:0,right:0,height:48,
+      display:"flex",alignItems:"center",justifyContent:"space-between",paddingLeft:14,paddingRight:14,zIndex:40,gap:12}}>
+      {showDesktopNav ? (
+        <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0}}>
+          {navItems.map((item)=>(
+            <button
+              key={item.label}
+              onClick={()=>goSection(item.ref)}
+              style={{
+                background:dark ? "transparent" : "rgba(0,0,0,.28)",
+                color:"#fff",
+                border:dark ? "none" : "1px solid rgba(255,255,255,.12)",
+                borderRadius:999,
+                cursor:"pointer",
+                padding:"10px 16px",
+                fontSize:13,
+                fontWeight:800,
+                letterSpacing:".12em",
+                textTransform:"uppercase",
+                whiteSpace:"nowrap",
+                backdropFilter:dark ? "none" : "blur(8px)",
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <button onClick={()=>setMenuOpen(true)}
+          style={{width:36,height:36,background:dark?"transparent":"rgba(0,0,0,.38)",
+            border:"none",borderRadius:10,cursor:"pointer",
+            display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4.5,
+            backdropFilter:dark?"none":"blur(8px)"}}>
+          {[0,1,2].map(i=><span key={i} style={{width:15,height:1.5,background:"#fff",borderRadius:2,display:"block"}}/>)}
+        </button>
+      )}
+      <button onClick={()=>{ setPage("cart"); setHowItWorksPopupOpen(true); }}
+        style={{width:showDesktopNav?42:36,height:showDesktopNav?42:36,background:dark?"transparent":"rgba(0,0,0,.38)",
           border:"none",borderRadius:10,cursor:"pointer",
           display:"flex",alignItems:"center",justifyContent:"center",
-          backdropFilter:dark?"none":"blur(8px)",position:"relative",justifySelf:"end"}}>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+          backdropFilter:dark?"none":"blur(8px)",position:"relative",flexShrink:0}}>
+        <svg width={showDesktopNav?19:17} height={showDesktopNav?19:17} viewBox="0 0 24 24" fill="none"
           stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
           <line x1="3" y1="6" x2="21" y2="6"/>
           <path d="M16 10a4 4 0 01-8 0"/>
         </svg>
-        {cart.length>0&&<span style={{position:"absolute",top:-5,right:-5,background:"#ef4444",
-          color:"#fff",width:15,height:15,borderRadius:"50%",fontSize:8,fontWeight:900,
+        {cart.length>0&&<span style={{position:"absolute",top:showDesktopNav?-6:-5,right:showDesktopNav?-6:-5,background:"#ef4444",
+          color:"#fff",width:showDesktopNav?17:15,height:showDesktopNav?17:15,borderRadius:"50%",fontSize:showDesktopNav?9:8,fontWeight:900,
           display:"flex",alignItems:"center",justifyContent:"center"}}>{cart.length}</span>}
       </button>
     </div>
@@ -847,26 +1267,45 @@ export default function App() {
   ];
 
   const heroButtonStyle = (id) => ({
-    flex: 1,
-    minWidth: 0,
-    padding: "11px 0",
-    background: heroBtnHover === id ? "#fff" : "transparent",
-    color: heroBtnHover === id ? "#000" : "#fff",
-    border: "1px solid rgba(255,255,255,.72)",
+    minWidth: 132,
+    padding: "14px 30px",
+    background: id === "shop"
+      ? (heroBtnHover === id ? "rgba(255,255,255,.25)" : "rgba(255,255,255,.15)")
+      : (heroBtnHover === id ? "rgba(255,255,255,.08)" : "transparent"),
+    color: "#fff",
+    border: id === "shop" ? "1.5px solid #fff" : "1.5px solid rgba(255,255,255,.55)",
     borderRadius: 99,
-    fontSize: 11,
-    fontWeight: 800,
-    letterSpacing: ".1em",
+    fontSize: 10,
+    fontWeight: 700,
+    letterSpacing: ".22em",
     textTransform: "uppercase",
     cursor: "pointer",
-    boxShadow: heroBtnHover === id ? "0 0 18px rgba(255,255,255,.75), 0 0 36px rgba(255,255,255,.42)" : "none",
-    transition: "all .22s ease",
+    backdropFilter: id === "shop" ? "blur(4px)" : "none",
+    boxShadow: heroBtnHover === id ? "0 6px 24px rgba(0,0,0,.35)" : "none",
+    transform: heroBtnHover === id ? "translateY(-1px)" : "translateY(0)",
+    transition: "all .25s ease",
   });
 
   return (
     <div style={{minHeight:"100dvh",
       background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)",
       fontFamily:"-apple-system,BlinkMacSystemFont,sans-serif"}}>
+      <style>{`
+        @keyframes cloud9LogoRollIn {
+          0% {
+            transform: translateX(170px) rotate(26deg);
+            opacity: 0;
+          }
+          68% {
+            transform: translateX(-12px) rotate(-5deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(0) rotate(0deg);
+            opacity: 1;
+          }
+        }
+      `}</style>
 
       <div style={{position:"relative",width:"100%",minHeight:"100dvh"}}>
         {/* Screen */}
@@ -887,24 +1326,27 @@ export default function App() {
           {/* ══════════════════════════════════════ */}
 
           {/* Dim overlay — only covers the right part (not the drawer itself) */}
-          <div onClick={()=>setMenuOpen(false)}
-            style={{position:"absolute",inset:0,zIndex:149,
-              background:"rgba(0,0,0,.45)",backdropFilter:"blur(2px)",
-              opacity:menuOpen?1:0,pointerEvents:menuOpen?"all":"none",
-              transition:"opacity .3s"}}/>
+          {!showDesktopNav && (
+            <div onClick={()=>setMenuOpen(false)}
+              style={{position:"absolute",inset:0,zIndex:149,
+                background:"rgba(0,0,0,.45)",backdropFilter:"blur(2px)",
+                opacity:menuOpen?1:0,pointerEvents:menuOpen?"all":"none",
+                transition:"opacity .3s"}}/>
+          )}
 
           {/* Drawer panel — slides in from left, only 72% wide */}
-          <div style={{
-            position:"absolute",top:0,left:0,bottom:0,
-            width:"72%",
-            background:"rgba(10,10,10,.93)",
-            backdropFilter:"blur(20px)",
-            zIndex:150,
-            transform:menuOpen?"translateX(0)":"translateX(-100%)",
-            transition:"transform .35s cubic-bezier(.4,0,.2,1)",
-            display:"flex",flexDirection:"column",
-            borderRight:"1px solid rgba(255,255,255,.07)",
-          }}>
+          {!showDesktopNav && (
+            <div style={{
+              position:"absolute",top:0,left:0,bottom:0,
+              width:"72%",
+              background:"rgba(10,10,10,.93)",
+              backdropFilter:"blur(20px)",
+              zIndex:150,
+              transform:menuOpen?"translateX(0)":"translateX(-100%)",
+              transition:"transform .35s cubic-bezier(.4,0,.2,1)",
+              display:"flex",flexDirection:"column",
+              borderRight:"1px solid rgba(255,255,255,.07)",
+            }}>
             {/* Drawer header */}
             <div style={{paddingTop:"calc(env(safe-area-inset-top, 0px) + 20px)",paddingRight:20,paddingBottom:20,paddingLeft:20,borderBottom:"1px solid rgba(255,255,255,.08)"}}>
               <span style={{fontFamily:"Georgia,serif",fontWeight:900,fontSize:18,
@@ -955,7 +1397,8 @@ export default function App() {
                 ))}
               </div>
             </div>
-          </div>
+            </div>
+          )}
 
           {/* ══════════════════════════════════ */}
           {/* PAGE: HOME                          */}
@@ -968,49 +1411,54 @@ export default function App() {
             <div ref={mainRef} style={{flex:1,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch"}} id="mainScroll">
 
                             {/* HERO */}
-              <div ref={heroRef} style={{position:"relative",height:"100svh",minHeight:"min(680px, 100svh)",overflow:"hidden",flexShrink:0,background:"#000"}}>
-                <img src={IMAGE_BG} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"62% center",opacity:.66,transform:"scale(1.02)"}}/>
-                <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.7) 36%,rgba(0,0,0,.28) 64%,rgba(0,0,0,.58) 100%)"}}/>
-                <Smoke/>
+              <div ref={heroRef} style={{position:"relative",minHeight:"100svh",overflow:"hidden",flexShrink:0,background:"#000",display:"flex",flexDirection:"column",alignItems:"center"}}>
+                <img src={IMAGE_BG} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 30%",zIndex:0}}/>
+                <div style={{position:"absolute",inset:0,zIndex:0,background:"radial-gradient(ellipse 100% 80% at 50% 50%, transparent 30%, rgba(0,0,0,.45) 100%), linear-gradient(to bottom, rgba(0,0,0,.80) 0%, rgba(0,0,0,.08) 22%, rgba(0,0,0,0) 45%, rgba(0,0,0,.52) 70%, rgba(0,0,0,.97) 100%)"}}/>
+                <div style={{position:"absolute",inset:0,zIndex:1,opacity:.02,backgroundImage:'url("data:image/svg+xml,%3Csvg viewBox=%270 0 256 256%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.9%27 numOctaves=%274%27 stitchTiles=%27stitch%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/%3E%3C/svg%3E")',backgroundSize:"180px",pointerEvents:"none"}}/>
 
-                <div style={{position:"absolute",top:"clamp(108px, 16vw, 132px)",left:0,right:0,padding:"0 18px",zIndex:5,textAlign:"center"}}>
-                  <div style={{fontSize:10,letterSpacing:".34em",textTransform:"uppercase",color:"rgba(255,255,255,.64)"}}>
-                    {"CAPE TOWN \u2022 PREMIUM HOOKAH RENTAL"}
-                  </div>
-                </div>
-
-                <div style={{position:"absolute",left:0,right:0,top:"clamp(150px, 26vw, 182px)",zIndex:5,padding:"0 18px"}}>
-                  <div style={{width:"min(340px, 90vw)",margin:"0 auto",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",gap:"clamp(44px, 12vw, 80px)"}}>
-                    <div style={{fontFamily:"Georgia,serif",fontWeight:900,fontSize:"clamp(56px, 15vw, 70px)",color:"#fff",lineHeight:.8,letterSpacing:".02em"}}>
-                      CLOUD
-                      <br/>
-                      <span style={{fontSize:"clamp(118px, 30vw, 160px)",color:"transparent",WebkitTextStroke:"1px rgba(255,255,255,.25)"}}>9</span>
-                      <br/>
-                      <span style={{fontSize:"clamp(21px, 6vw, 25px)",color:"#fff",letterSpacing:".04em"}}>HOOKAH</span>
+                <div style={{position:"relative",zIndex:10,flex:1,width:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"space-between",textAlign:"center",padding:showDesktopNav?"108px 64px 62px":"88px 24px 86px"}}>
+                  <div style={{width:"100%",display:"flex",flexDirection:"column",alignItems:"center"}}>
+                    <div style={{fontSize:showDesktopNav?17:10,fontWeight:800,letterSpacing:showDesktopNav?".38em":".24em",textTransform:"uppercase",color:"rgba(255,255,255,.78)",marginBottom:showDesktopNav?58:42,whiteSpace:showDesktopNav?"nowrap":"normal",lineHeight:1.8,maxWidth:showDesktopNav?"none":360}}>
+                      CAPE TOWN {"\u2022"} PREMIUM HOOKAH RENTAL
                     </div>
-                    <p style={{fontSize:"clamp(14px, 4vw, 16px)",color:"rgba(255,255,255,.66)",lineHeight:1.55,maxWidth:280,margin:0}}>Premium pipes delivered to your door</p>
+                    <div style={{fontFamily:"Georgia,serif",fontSize:showDesktopNav?104:74,fontWeight:900,letterSpacing:showDesktopNav?".02em":"-.02em",lineHeight:.86,color:"#fff",textShadow:"0 10px 28px rgba(0,0,0,.42)"}}>
+                      CLOUD
+                    </div>
+                    <div style={{fontFamily:"Georgia,serif",fontSize:showDesktopNav?120:88,fontWeight:900,letterSpacing:"-.05em",lineHeight:.82,color:"transparent",WebkitTextStroke:"1.2px rgba(255,255,255,.32)",textShadow:"0 10px 28px rgba(0,0,0,.28)",marginTop:showDesktopNav?2:4}}>
+                      9
+                    </div>
+                    <div style={{fontFamily:"Georgia,serif",fontSize:showDesktopNav?42:31,fontWeight:900,letterSpacing:".04em",color:"#fff",lineHeight:1,marginTop:showDesktopNav?8:6}}>
+                      HOOKAH
+                    </div>
+                    <div style={{fontSize:showDesktopNav?12:10,fontWeight:800,letterSpacing:showDesktopNav?".13em":".09em",textTransform:"uppercase",lineHeight:1.75,color:"rgba(255,255,255,.88)",margin:showDesktopNav?"48px 0 0":"40px 0 0",maxWidth:560,display:"flex",alignItems:"center",justifyContent:"center",gap:8,flexWrap:"wrap",textShadow:"0 2px 12px rgba(0,0,0,.65)"}}>
+                      <span>Premium pipes delivered to your door</span>
+                      <span style={{color:"rgba(255,255,255,.72)"}}>{"\u2022"}</span>
+                      <span>Free delivery & collection in Cape Town</span>
+                      <span style={{color:"rgba(255,255,255,.72)"}}>{"\u2022"}</span>
+                      <span>Available 7 days a week</span>
+                    </div>
                   </div>
-                </div>
 
-                <div style={{position:"absolute",left:"50%",transform:"translateX(-50%)",bottom:"clamp(150px, 34vw, 270px)",zIndex:6,width:"min(320px, 86vw)",display:"flex",gap:10,flexWrap:"nowrap"}}>
-                  <button onClick={()=>shopRef.current?.scrollIntoView({behavior:"smooth"})}
-                    style={heroButtonStyle("shop")}
-                    onMouseEnter={()=>setHeroBtnHover("shop")}
-                    onMouseLeave={()=>setHeroBtnHover("")}>
-                    Rent Now
-                  </button>
-                  <button onClick={()=>combosRef.current?.scrollIntoView({behavior:"smooth"})}
-                    style={heroButtonStyle("combos")}
-                    onMouseEnter={()=>setHeroBtnHover("combos")}
-                    onMouseLeave={()=>setHeroBtnHover("")}>
-                    Combos
-                  </button>
+                  <div style={{display:"flex",gap:14,justifyContent:"center",width:"100%",flexWrap:"nowrap"}}>
+                    <button onClick={()=>shopRef.current?.scrollIntoView({behavior:"smooth"})}
+                      style={heroButtonStyle("shop")}
+                      onMouseEnter={()=>setHeroBtnHover("shop")}
+                      onMouseLeave={()=>setHeroBtnHover("")}>
+                      Rent Now
+                    </button>
+                    <button onClick={()=>combosRef.current?.scrollIntoView({behavior:"smooth"})}
+                      style={heroButtonStyle("combos")}
+                      onMouseEnter={()=>setHeroBtnHover("combos")}
+                      onMouseLeave={()=>setHeroBtnHover("")}>
+                      Combos
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Stats */}
               <div style={{background:"#0a0a0a",padding:"11px 12px",display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:7}}>
-                {[["3","Pipes"],["4h","Min"],["R0","Delivery"],["100%","Dep. Back"]].map(([n,l])=>(
+                {[["3","Setups"],["1h","From"],["R0","Delivery"],["7","Days"]].map(([n,l])=>(
                   <div key={l} style={{background:"#141414",borderRadius:9,padding:"8px 6px",textAlign:"center",border:"1px solid #1e1e1e",minWidth:0}}>
                     <div style={{fontFamily:"Georgia,serif",fontWeight:900,fontSize:17,color:"#fff"}}>{n}</div>
                     <div style={{fontSize:8,letterSpacing:".12em",textTransform:"uppercase",color:"#444",marginTop:2}}>{l}</div>
@@ -1021,13 +1469,13 @@ export default function App() {
               {/* SHOP */}
               <div ref={shopRef} style={{background:"#f2f2f2",padding:"18px 13px"}}>
                 <div style={{fontSize:9,letterSpacing:".35em",textTransform:"uppercase",color:"#bbb",marginBottom:3}}>Available Now</div>
-                <h2 style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:900,color:"#111",margin:"0 0 14px"}}>Rentals</h2>
+                <h2 style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:900,color:"#111",margin:"0 0 7px"}}>Choose your setup</h2>
                 <div style={{display:"flex",gap:12,overflowX:"auto",paddingBottom:8,scrollSnapType:"x mandatory",paddingRight:4}}>
                   {PRODUCTS.map(p=><Card key={p.id} p={p} onAdd={addToCart} onOpen={openProduct}/>)}
                 </div>
-                <div style={{fontSize:10,color:"#aaa",marginTop:2,marginBottom:10}}>Swipe left to see more pipes</div>
+                <div style={{fontSize:10,color:"#888",marginTop:2,marginBottom:10}}>Swipe left to compare the best fit for your guests, setup, and mood.</div>
                 {cart.length>0&&(
-                  <button onClick={()=>setPage("cart")} style={{width:"100%",padding:"13px",background:"#111",
+                  <button onClick={()=>{ setPage("cart"); setHowItWorksPopupOpen(true); }} style={{width:"100%",padding:"13px",background:"#111",
                     color:"#fff",border:"none",borderRadius:11,fontSize:12,fontWeight:800,
                     letterSpacing:".08em",textTransform:"uppercase",cursor:"pointer",marginTop:2,
                     boxShadow:"0 4px 14px rgba(0,0,0,.16)"}}>
@@ -1040,23 +1488,25 @@ export default function App() {
               <div ref={combosRef} style={{background:"#000",padding:"18px 13px",position:"relative",overflow:"hidden"}}>
                 <div style={{position:"relative",zIndex:3}}>
                   <div style={{fontSize:9,letterSpacing:".35em",textTransform:"uppercase",color:"#444",marginBottom:3}}>Packages</div>
-                  <h2 style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:900,color:"#fff",margin:"0 0 14px"}}>Combos</h2>
+                  <h2 style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:900,color:"#fff",margin:"0 0 6px"}}>Event-ready combos</h2>
                   <div style={{fontSize:10,color:"#777",marginBottom:10}}>
-                    Deposit rule: combos use Double Pipe deposit at R{doublePipeDeposit.toLocaleString()} per hookah pipe. Deposit is fully refundable.
+                    Combos keep a refundable security hold of {formatMoney(doublePipeDeposit)} per hookah pipe because event setups carry higher equipment risk.
                   </div>
                   <div style={{display:"flex",gap:12,overflowX:"auto",paddingBottom:8,scrollSnapType:"x mandatory"}}>
                     {COMBO_PACKAGES.map(combo=>{
-                      const rentalNow = combo.basePrice;
-                      const depositNow = combo.pipes * doublePipeDeposit;
-                      const totalNow = rentalNow + depositNow;
+                      const startingPricing = calculateComboPricing(combo, getComboDefaultPipeTypes(combo), COMBO_MIN_HOURS, false);
+                      const rentalNow = startingPricing.rentalCost;
+                      const depositNow = startingPricing.deposit;
+                      const totalNow = startingPricing.totalNow;
                       return (
                         <article
                           key={combo.id}
                           onClick={()=>openCombo(combo)}
                           style={{background:"#0d0d0d",border:"1px solid #1c1c1c",borderRadius:14,padding:12,width:276,flexShrink:0,scrollSnapAlign:"start",cursor:"pointer"}}
                         >
-                          <div style={{fontWeight:900,fontSize:16,color:"#fff",marginBottom:3}}>{combo.title} - R{combo.basePrice.toLocaleString()}</div>
-                          <div style={{fontSize:10,color:"#777",marginBottom:8}}>Combo rental for 4 hours</div>
+                          <div style={{fontWeight:900,fontSize:16,color:"#fff",marginBottom:3}}>{combo.title} - {formatMoney(rentalNow)}</div>
+                          <div style={{fontSize:10,color:"#b0b0b0",marginBottom:4}}>{combo.subtitle}</div>
+                          <div style={{fontSize:10,color:"#777",marginBottom:8}}>4 hour combo rental with 10% off pipe rental</div>
                           <div style={{background:"#111",border:"1px solid #202020",borderRadius:10,padding:10,marginBottom:8}}>
                             {combo.lines.map(line=>(
                               <div key={line} style={{fontSize:11,color:"#d7d7d7",padding:"4px 0",borderBottom:"1px solid #1d1d1d"}}>{line}</div>
@@ -1064,13 +1514,21 @@ export default function App() {
                           </div>
                           <div style={{background:"#111",border:"1px solid #202020",borderRadius:10,padding:9}}>
                             <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#aaa",marginBottom:4}}>
-                              <span>Rental</span><strong style={{color:"#fff"}}>R{rentalNow.toLocaleString()}</strong>
+                              <span>Rental after 10%</span><strong style={{color:"#fff"}}>R{rentalNow.toLocaleString()}</strong>
                             </div>
+                            <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#aaa",marginBottom:4}}>
+                              <span>Combo saving</span><strong style={{color:"#fff"}}>-{formatMoney(startingPricing.discount)}</strong>
+                            </div>
+                            {startingPricing.tierExtra > 0&&(
+                              <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#aaa",marginBottom:4}}>
+                                <span>{combo.id==="vip" ? "VIP extras" : "VVIP extras"}</span><strong style={{color:"#fff"}}>+{formatMoney(startingPricing.tierExtra)}</strong>
+                              </div>
+                            )}
                             <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#aaa",marginBottom:5}}>
-                              <span>Refundable deposit</span><strong style={{color:"#fff"}}>R{depositNow.toLocaleString()}</strong>
+                              <span>Refundable security hold</span><strong style={{color:"#fff"}}>{formatMoney(depositNow)}</strong>
                             </div>
                             <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"#fff",borderTop:"1px solid #252525",paddingTop:7,fontWeight:800}}>
-                              <span>Total now</span><span>R{totalNow.toLocaleString()}</span>
+                              <span>Due for booking</span><span>{formatMoney(totalNow)}</span>
                             </div>
                             <div style={{fontSize:10,color:"#777",marginTop:4}}>Tap card to choose flavour and add-ons.</div>
                           </div>
@@ -1081,12 +1539,71 @@ export default function App() {
                 </div>
               </div>
 
+              <div style={{background:"#ffffff",padding:"20px 13px 8px"}}>
+                <div style={{fontSize:9,letterSpacing:".35em",textTransform:"uppercase",color:"#b0b0b0",marginBottom:3}}>Why Cloud 9</div>
+                <h2 style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:900,color:"#111",margin:"0 0 12px"}}>Built to feel premium and reliable</h2>
+                <div style={{display:"grid",gap:10}}>
+                  {SERVICE_PROMISES.map((item)=>(
+                    <article key={item.title} style={{background:"#0f0f0f",borderRadius:14,padding:"14px 13px",border:"1px solid #1e1e1e"}}>
+                      <div style={{fontSize:12,fontWeight:800,color:"#fff",marginBottom:4}}>{item.title}</div>
+                      <div style={{fontSize:11,color:"#b8b8b8",lineHeight:1.6}}>{item.text}</div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{background:"#fbfbfb",padding:"12px 13px 20px"}}>
+                <div style={{display:"grid",gap:10}}>
+                  {GUARANTEE_CARDS.map((item)=>(
+                    <article key={item.title} style={{background:"#fff",border:"1px solid #ececec",borderRadius:12,padding:"12px 11px",boxShadow:"0 6px 18px rgba(0,0,0,.04)"}}>
+                      <div style={{fontSize:12,fontWeight:800,color:"#111",marginBottom:4}}>{item.title}</div>
+                      <div style={{fontSize:11,color:"#666",lineHeight:1.6}}>{item.text}</div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{background:"#0b0b0b",padding:"20px 13px 18px"}}>
+                <div style={{fontSize:9,letterSpacing:".35em",textTransform:"uppercase",color:"#666",marginBottom:3}}>Reviews</div>
+                <h2 style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:900,color:"#fff",margin:"0 0 7px"}}>Customer Feedback</h2>
+                <p style={{fontSize:11,color:"#bdbdbd",lineHeight:1.6,margin:"0 0 12px"}}>
+                  Approved customer feedback will appear here, while Facebook reviews help visitors verify the brand outside the website.
+                </p>
+                <div style={{display:"flex",gap:12,overflowX:"auto",paddingBottom:8,scrollSnapType:"x mandatory"}}>
+                  {REVIEW_CARDS.map(review=>(
+                    <article key={`${review.name}-${review.area}`} style={{background:"#151515",border:"1px solid #252525",borderRadius:14,padding:12,width:250,flexShrink:0,scrollSnapAlign:"start"}}>
+                      <div style={{fontSize:13,letterSpacing:".08em",color:"#fff",marginBottom:8}}>{"*****".slice(0, review.rating)}</div>
+                      <div style={{fontSize:12,color:"#e8e8e8",lineHeight:1.55,marginBottom:10}}>"{review.text}"</div>
+                      <div style={{fontSize:11,fontWeight:800,color:"#fff"}}>{review.name}</div>
+                      <div style={{fontSize:10,color:"#777"}}>{review.area}</div>
+                    </article>
+                  ))}
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginTop:9}}>
+                  <button
+                    type="button"
+                    onClick={()=>setReviewPopupOpen(true)}
+                    style={{padding:"11px 10px",border:"1px solid #fff",borderRadius:11,color:"#111",background:"#fff",fontSize:10,fontWeight:900,letterSpacing:".08em",textTransform:"uppercase",cursor:"pointer"}}
+                  >
+                    Add Your Review
+                  </button>
+                  <a
+                    href="https://www.facebook.com/profile.php?id=61582266356916"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{textAlign:"center",textDecoration:"none",padding:"11px 10px",border:"1px solid rgba(255,255,255,.35)",borderRadius:11,color:"#fff",background:"transparent",fontSize:10,fontWeight:900,letterSpacing:".08em",textTransform:"uppercase"}}
+                  >
+                    Facebook
+                  </a>
+                </div>
+              </div>
+
               {/* POLICY */}
               <div ref={policyRef} style={{background:"linear-gradient(180deg,#f7f7f7 0%,#ffffff 46%)",padding:"20px 13px 16px"}}>
                 <div style={{fontSize:9,letterSpacing:".35em",textTransform:"uppercase",color:"#9a9a9a",marginBottom:3}}>Transparency</div>
-                <h2 style={{fontFamily:"Georgia,serif",fontSize:24,fontWeight:900,color:"#111",margin:"0 0 7px"}}>Policy</h2>
+                <h2 style={{fontFamily:"Georgia,serif",fontSize:24,fontWeight:900,color:"#111",margin:"0 0 7px"}}>Booking details</h2>
                 <p style={{margin:"0 0 12px",fontSize:11,color:"#6a6a6a",lineHeight:1.6}}>
-                  Clear, simple terms so every booking is smooth and fair.
+                  Clear booking terms so customers know exactly what to expect before they submit.
                 </p>
                 <div style={{display:"grid",gap:9}}>
                   {POLICY_ITEMS.map(item=>(
@@ -1110,13 +1627,13 @@ export default function App() {
                   <div style={{fontSize:9,letterSpacing:".35em",textTransform:"uppercase",color:"#444",marginBottom:3}}>Our Story</div>
                   <h2 style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:900,color:"#fff",margin:"0 0 11px"}}>About Cloud 9</h2>
                   <p style={{fontSize:11,color:"#d0d0d0",lineHeight:1.8,marginBottom:10}}>
-                    Cloud 9 is a black-owned hookah rental company established in February 2026, created to bring a smooth, premium hubbly experience directly to you.
+                    Cloud 9 is a Cape Town hookah rental service built to make private hosting feel smooth, stylish, and easy to arrange.
                   </p>
                   <p style={{fontSize:11,color:"#c0c0c0",lineHeight:1.8,marginBottom:10}}>
-                    Every pipe is professionally cleaned, prepared, and inspected before each rental to ensure the highest quality smoke and hygiene standards.
+                    Every pipe is professionally cleaned, checked, and prepared before each booking so the experience feels premium from delivery to collection.
                   </p>
                   <p style={{fontSize:11,color:"#c0c0c0",lineHeight:1.8,marginBottom:10}}>
-                    We specialize in on-demand hookah delivery across Cape Town, making it easy to enjoy premium pipes wherever you are.
+                    We focus on convenience: clear booking, free delivery and collection, and direct confirmation from a real team.
                   </p>
                   <p style={{fontSize:11,color:"#c0c0c0",lineHeight:1.8,marginBottom:10}}>
                     Location: Cape Town, South Africa. We operate 7 days a week.
@@ -1134,20 +1651,31 @@ export default function App() {
                     ))}
                   </div>
                   <p style={{fontSize:11,color:"#c0c0c0",lineHeight:1.8,marginBottom:10}}>
-                    Cloud 9 delivers the full experience to your door.
+                    Cloud 9 brings the full hookah atmosphere to your door without the usual setup stress.
                   </p>
                   <p style={{fontSize:11,color:"#c0c0c0",lineHeight:1.8,marginBottom:10}}>
-                    For guests on the move, we also offer car hubbly rentals, perfect for scenic drives, beach views, and road trips around the city.
-                  </p>
-                  <p style={{fontSize:11,color:"#c0c0c0",lineHeight:1.8,marginBottom:10}}>
-                    We partner with trusted local herbal suppliers to offer optional mix add-ons for customers who want to customize their experience.
+                    For guests on the move, we also offer car hubbly rentals for scenic drives, beach views, and road trips around the city.
                   </p>
                   <p style={{fontSize:11,color:"#bdbdbd",lineHeight:1.8,marginBottom:3}}>Our goal is simple:</p>
                   <p style={{fontSize:12,color:"#fff",fontWeight:800,lineHeight:1.8,marginBottom:4}}>
-                    Deliver a luxury, hassle-free hookah experience anywhere in Cape Town.
+                    Deliver a premium, reliable hookah experience anywhere in Cape Town.
                   </p>
                 </div>
               </div>
+
+              <div style={{background:"#f8f8f8",padding:"20px 13px 22px"}}>
+                <div style={{fontSize:9,letterSpacing:".35em",textTransform:"uppercase",color:"#b0b0b0",marginBottom:3}}>FAQ</div>
+                <h2 style={{fontFamily:"Georgia,serif",fontSize:22,fontWeight:900,color:"#111",margin:"0 0 12px"}}>Questions customers ask before booking</h2>
+                <div style={{display:"grid",gap:10}}>
+                  {FAQ_ITEMS.map((item)=>(
+                    <article key={item.question} style={{background:"#fff",border:"1px solid #ececec",borderRadius:12,padding:"12px 11px"}}>
+                      <div style={{fontSize:12,fontWeight:800,color:"#111",marginBottom:4}}>{item.question}</div>
+                      <div style={{fontSize:11,color:"#666",lineHeight:1.65}}>{item.answer}</div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
 
               {/* CONTACT */}
               <div ref={contactRef} style={{background:"#f2f2f2",padding:"18px 13px"}}>
@@ -1175,13 +1703,19 @@ export default function App() {
                     placeholder="Your email"
                     style={{width:"100%",padding:"11px 12px",border:"1.5px solid #e8e8e8",borderRadius:10,fontSize:13,background:"#fff",color:"#111"}}
                   />
-                  <input
-                    type="text"
+                  <select
                     value={contactForm.subject}
                     onChange={e=>updContact("subject",e.target.value)}
-                    placeholder="Subject"
                     style={{width:"100%",padding:"11px 12px",border:"1.5px solid #e8e8e8",borderRadius:10,fontSize:13,background:"#fff",color:"#111"}}
-                  />
+                  >
+                    <option value="">Choose subject</option>
+                    <option value="Book in advance">Book in advance</option>
+                    <option value="Booking enquiry">Booking enquiry</option>
+                    <option value="Combo or event booking">Combo or event booking</option>
+                    <option value="Deposit question">Deposit question</option>
+                    <option value="Delivery question">Delivery question</option>
+                    <option value="Other">Other</option>
+                  </select>
                   <textarea
                     value={contactForm.message}
                     onChange={e=>updContact("message",e.target.value)}
@@ -1212,7 +1746,7 @@ export default function App() {
             </div>
             {activeProduct&&(
               <div onClick={()=>setActiveProduct(null)} style={{position:"absolute",inset:0,zIndex:120,background:"rgba(0,0,0,.62)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}}>
-                <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:330,background:"#fff",borderRadius:16,overflow:"hidden",boxShadow:"0 20px 50px rgba(0,0,0,.35)"}}>
+                <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:330,background:"#fff",borderRadius:16,overflowY:"auto",maxHeight:"92%",boxShadow:"0 20px 50px rgba(0,0,0,.35)"}}>
                   <div style={{position:"relative",background:"#f2f2f2",height:210,display:"flex",alignItems:"center",justifyContent:"center"}}>
                     <img
                       src={activeProduct.img}
@@ -1229,37 +1763,66 @@ export default function App() {
                   <div style={{padding:14}}>
                     <div style={{fontFamily:"Georgia,serif",fontSize:23,fontWeight:900,color:"#111",marginBottom:4}}>{activeProduct.name}</div>
                     <p style={{margin:"0 0 10px",fontSize:12,color:"#777",lineHeight:1.5}}>{activeProduct.desc}</p>
+                    <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:"10px 11px",marginBottom:10}}>
+                      <div style={{fontSize:11,fontWeight:800,color:"#111",letterSpacing:".05em",textTransform:"uppercase",marginBottom:6}}>What comes with it</div>
+                      <div style={{display:"grid",gap:4}}>
+                        {(activeProduct.includedItems || []).map((line)=>(
+                          <div key={line} style={{fontSize:11,color:"#666",lineHeight:1.5}}>{"\u2022"} {line}</div>
+                        ))}
+                      </div>
+                    </div>
 
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:"8px 10px",marginBottom:10}}>
                       <span style={{fontSize:11,fontWeight:700,color:"#444",letterSpacing:".05em",textTransform:"uppercase"}}>Rental Hours</span>
                       <div style={{display:"flex",alignItems:"center",gap:7}}>
-                        <button onClick={()=>setActiveHours(h=>Math.max(4,h-4))} style={{width:24,height:24,borderRadius:999,border:"1px solid #ddd",background:"#fff",cursor:"pointer",fontSize:16,lineHeight:1}}>-</button>
+                        <button onClick={()=>setActiveHours(h=>Math.max(getProductMinHours(activeProduct),h-getProductHourStep(activeProduct)))} style={{width:24,height:24,borderRadius:999,border:"1px solid #ddd",background:"#fff",cursor:"pointer",fontSize:16,lineHeight:1}}>-</button>
                         <span style={{minWidth:38,textAlign:"center",fontSize:12,fontWeight:800,color:"#111"}}>{activeHours}h</span>
-                        <button onClick={()=>setActiveHours(h=>h+4)} style={{width:24,height:24,borderRadius:999,border:"1px solid #ddd",background:"#fff",cursor:"pointer",fontSize:16,lineHeight:1}}>+</button>
+                        <button onClick={()=>setActiveHours(h=>h+getProductHourStep(activeProduct))} style={{width:24,height:24,borderRadius:999,border:"1px solid #ddd",background:"#fff",cursor:"pointer",fontSize:16,lineHeight:1}}>+</button>
                       </div>
+                    </div>
+
+                    <div style={{fontSize:11,fontWeight:800,color:"#444",letterSpacing:".05em",textTransform:"uppercase",marginBottom:6}}>Preferred Flavour</div>
+                    <div style={{display:"grid",gap:8,marginBottom:10}}>
+                      <input
+                        type="text"
+                        value={activeProductFlavourText}
+                        onChange={e=>{ setActiveProductFlavourText(e.target.value); if(e.target.value.trim()) setActiveProductAnyFlavour(false); }}
+                        disabled={activeProductAnyFlavour}
+                        placeholder="Type flavour or flavour mix"
+                        style={{width:"100%",padding:"10px 11px",border:"1px solid #eee",borderRadius:10,fontSize:12,background:activeProductAnyFlavour?"#f5f5f5":"#fff",color:"#111",boxSizing:"border-box"}}
+                      />
+                      <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:"#444",cursor:"pointer",fontWeight:700}}>
+                        <input
+                          type="checkbox"
+                          checked={activeProductAnyFlavour}
+                          onChange={e=>setActiveProductAnyFlavour(e.target.checked)}
+                          style={{appearance:"auto",WebkitAppearance:"checkbox",width:17,height:17,accentColor:"#111",cursor:"pointer"}}
+                        />
+                        Any flavour
+                      </label>
                     </div>
 
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
                       <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}>Rental ({activeHours}h): <strong style={{color:"#111"}}>R{activeRental.toLocaleString()}</strong></div>
-                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}><span style={{display:"inline-flex",alignItems:"center",gap:4}}>Deposit <Tip text="Full deposit is refunded when the pipe is returned undamaged." /></span>: <strong style={{color:"#111"}}>R{activeProduct.deposit.toLocaleString()}</strong></div>
+                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}><span style={{display:"inline-flex",alignItems:"center",gap:4}}>Security hold <Tip text="A refundable security hold only applies where the equipment risk is higher." /></span>: <strong style={{color:"#111"}}>{getDepositCopy(activeProduct.deposit)}</strong></div>
                       <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}>Hoses: <strong style={{color:"#111"}}>{activeProduct.hoses}</strong></div>
-                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}>Total now: <strong style={{color:"#111"}}>R{activeTotalNow.toLocaleString()}</strong></div>
+                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}>Due for booking: <strong style={{color:"#111"}}>{formatMoney(activeTotalNow)}</strong></div>
                     </div>
-                    <button onClick={()=>{ addToCart(activeProduct,activeHours,activeRental,activeTotalNow); setActiveProduct(null); }}
+                    <button onClick={()=>{ addToCart(activeProduct,activeHours,activeRental,activeProductAnyFlavour ? "Any flavour" : activeProductFlavourText); setActiveProduct(null); }}
                       style={{width:"100%",padding:"11px",background:"#111",color:"#fff",border:"none",borderRadius:10,fontSize:11,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",cursor:"pointer",marginBottom:7}}>
                       Add {activeHours}h to Cart +
                     </button>
-                    <div style={{fontSize:11,color:"#9a9a9a"}}>Deposit is fully refunded after safe return.</div>
+                    <div style={{fontSize:11,color:"#9a9a9a"}}>{activeProduct.deposit > 0 ? "Security hold is refunded after safe return." : "No deposit is required for this setup right now."} If no flavour is chosen, we default to Any flavour.</div>
                   </div>
                 </div>
               </div>
             )}
             {activeCombo&&(
               <div onClick={()=>setActiveCombo(null)} style={{position:"absolute",inset:0,zIndex:121,background:"rgba(0,0,0,.62)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}}>
-                <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:332,background:"#fff",borderRadius:16,overflow:"hidden",boxShadow:"0 20px 50px rgba(0,0,0,.35)"}}>
+                <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:332,background:"#fff",borderRadius:16,overflowY:"auto",maxHeight:"92%",boxShadow:"0 20px 50px rgba(0,0,0,.35)"}}>
                   <div style={{padding:"14px 14px 10px",borderBottom:"1px solid #eee",position:"relative"}}>
                     <div style={{fontFamily:"Georgia,serif",fontSize:23,fontWeight:900,color:"#111",marginBottom:4}}>{activeCombo.title}</div>
-                    <div style={{fontSize:11,color:"#777"}}>Choose your flavour and extras before adding to cart.</div>
+                    <div style={{fontSize:11,color:"#777"}}>Add your flavour preference, rental hours, and event details before adding to cart.</div>
                     <button onClick={()=>setActiveCombo(null)} style={{position:"absolute",top:9,right:10,width:30,height:30,borderRadius:"50%",border:"none",background:"rgba(0,0,0,.75)",color:"#fff",cursor:"pointer",fontSize:16,lineHeight:1}}>x</button>
                   </div>
                   <div style={{padding:14}}>
@@ -1271,52 +1834,94 @@ export default function App() {
                         <button onClick={()=>setComboHours(h=>h+COMBO_HOURS_STEP)} style={{width:24,height:24,borderRadius:999,border:"1px solid #ddd",background:"#fff",cursor:"pointer",fontSize:16,lineHeight:1}}>+</button>
                       </div>
                     </div>
-                    <div style={{fontSize:11,fontWeight:800,color:"#444",letterSpacing:".05em",textTransform:"uppercase",marginBottom:6}}>Choose Your Flavour</div>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:10}}>
-                      {COMBO_FLAVOURS.map(flavour=>{
-                        const selected = comboFlavours.includes(flavour);
-                        return (
-                          <label
-                            key={flavour}
-                            style={{
-                              display:"flex",
-                              alignItems:"center",
-                              gap:7,
-                              fontSize:11,
-                              color:selected?"#fff":"#444",
-                              background:selected?"#111":"#fafafa",
-                              border:selected?"1px solid #111":"1px solid #eee",
-                              borderRadius:8,
-                              padding:"7px 8px",
-                              cursor:"pointer",
-                              fontWeight:selected?800:600
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selected}
-                              onChange={()=>toggleComboFlavour(flavour)}
-                              style={{appearance:"auto",WebkitAppearance:"checkbox",width:16,height:16,accentColor:"#111",cursor:"pointer"}}
-                            />
-                            {flavour}
+                    <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:12,padding:"10px 11px",marginBottom:10}}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:7}}>
+                        <div style={{fontSize:11,fontWeight:800,color:"#111",letterSpacing:".05em",textTransform:"uppercase"}}>Switch pipe types</div>
+                        <div style={{fontSize:10,color:"#777"}}>10% combo discount</div>
+                      </div>
+                      <div style={{display:"grid",gap:7}}>
+                        {comboPipeTypes.map((type,index)=>(
+                          <label key={`${activeCombo.id}-pipe-${index}`} style={{display:"grid",gridTemplateColumns:"72px 1fr",alignItems:"center",gap:8,fontSize:11,color:"#555"}}>
+                            <span style={{fontWeight:800,color:"#222"}}>Pipe {index+1}</span>
+                            <select
+                              value={type}
+                              onChange={e=>updateComboPipeType(index,e.target.value)}
+                              style={{width:"100%",padding:"8px 9px",border:"1px solid #e5e5e5",borderRadius:9,fontSize:12,background:"#fff",color:"#111"}}
+                            >
+                              {PRODUCTS.map(product=>(
+                                <option key={product.name} value={product.name}>
+                                  {product.name} - {getProductRentalLabel(product)}
+                                </option>
+                              ))}
+                            </select>
                           </label>
-                        );
-                      })}
+                        ))}
+                      </div>
+                      <div style={{fontSize:10,color:"#777",lineHeight:1.45,marginTop:8}}>
+                        Before discount: {formatMoney(activeComboBaseRental)} {"\u2022"} Saving: {formatMoney(activeComboDiscount)}{activeComboPricing.tierExtra > 0 ? ` \u2022 ${activeCombo.id==="vip" ? "VIP" : "VVIP"} extras: +${formatMoney(activeComboPricing.tierExtra)}` : ""}
+                      </div>
                     </div>
-                    <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:"#444",marginBottom:10,cursor:"pointer",fontWeight:700}}>
+                    <div style={{fontSize:11,fontWeight:800,color:"#444",letterSpacing:".05em",textTransform:"uppercase",marginBottom:6}}>Preferred Flavour</div>
+                    <div style={{display:"grid",gap:8,marginBottom:10}}>
                       <input
-                        type="checkbox"
-                        checked={comboWeed}
-                        onChange={e=>setComboWeed(e.target.checked)}
-                        style={{appearance:"auto",WebkitAppearance:"checkbox",width:17,height:17,accentColor:"#111",cursor:"pointer"}}
+                        type="text"
+                        value={comboFlavourText}
+                        onChange={e=>{ setComboFlavourText(e.target.value); if(e.target.value.trim()) setComboAnyFlavour(false); }}
+                        disabled={comboAnyFlavour}
+                        placeholder="Type flavour or flavour mix"
+                        style={{width:"100%",padding:"10px 11px",border:"1px solid #eee",borderRadius:10,fontSize:12,background:comboAnyFlavour?"#f5f5f5":"#fff",color:"#111",boxSizing:"border-box"}}
                       />
-                      Add small bag of weed (+R{comboAddOnPrice})
-                    </label>
+                      <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:"#444",cursor:"pointer",fontWeight:700}}>
+                        <input
+                          type="checkbox"
+                          checked={comboAnyFlavour}
+                          onChange={e=>setComboAnyFlavour(e.target.checked)}
+                          style={{appearance:"auto",WebkitAppearance:"checkbox",width:17,height:17,accentColor:"#111",cursor:"pointer"}}
+                        />
+                        Any flavour
+                      </label>
+                    </div>
+                    <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:12,padding:"10px 11px",marginBottom:10}}>
+                      <div style={{fontSize:11,fontWeight:800,color:"#111",letterSpacing:".05em",textTransform:"uppercase",marginBottom:7}}>Event booking</div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+                        <input
+                          type="number"
+                          min="1"
+                          value={comboEventPipes}
+                          onChange={e=>setComboEventPipes(e.target.value)}
+                          placeholder="How many pipes"
+                          style={{width:"100%",padding:"9px 10px",border:"1px solid #eee",borderRadius:9,fontSize:12,background:"#fff",color:"#111",boxSizing:"border-box"}}
+                        />
+                        <input
+                          type="text"
+                          value={comboEventPipeTypes}
+                          onChange={e=>setComboEventPipeTypes(e.target.value)}
+                          placeholder="Types of pipes"
+                          style={{width:"100%",padding:"9px 10px",border:"1px solid #eee",borderRadius:9,fontSize:12,background:"#fff",color:"#111",boxSizing:"border-box"}}
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={comboEventFlavours}
+                        onChange={e=>setComboEventFlavours(e.target.value)}
+                        placeholder="Event flavours, if different"
+                        style={{width:"100%",padding:"9px 10px",border:"1px solid #eee",borderRadius:9,fontSize:12,background:"#fff",color:"#111",boxSizing:"border-box",marginBottom:8}}
+                      />
+                      <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:"#444",cursor:"pointer",fontWeight:700}}>
+                        <input
+                          type="checkbox"
+                          checked={comboEventService}
+                          onChange={e=>setComboEventService(e.target.checked)}
+                          style={{appearance:"auto",WebkitAppearance:"checkbox",width:17,height:17,accentColor:"#111",cursor:"pointer"}}
+                        />
+                        Add event service (+R{EVENT_SERVICE_RATE}/hour for the entire event)
+                      </label>
+                    </div>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
-                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}>Rental ({comboHours}h): <strong style={{color:"#111"}}>R{activeComboRental.toLocaleString()}</strong></div>
-                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}><span style={{display:"inline-flex",alignItems:"center",gap:4}}>Deposit <Tip text="Full deposit is refunded when the pipe is returned undamaged." /></span>: <strong style={{color:"#111"}}>R{activeComboDeposit.toLocaleString()}</strong></div>
-                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}>Weed add-on: <strong style={{color:"#111"}}>{comboWeed?`+R${comboAddOnPrice}`:"No"}</strong></div>
-                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}>Total now: <strong style={{color:"#111"}}>R{activeComboTotal.toLocaleString()}</strong></div>
+                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}>Rental after 10% ({comboHours}h): <strong style={{color:"#111"}}>R{activeComboRental.toLocaleString()}</strong></div>
+                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}><span style={{display:"inline-flex",alignItems:"center",gap:4}}>Security hold <Tip text="Combo security holds stay in place because event setups carry higher equipment risk." /></span>: <strong style={{color:"#111"}}>{formatMoney(activeComboDeposit)}</strong></div>
+                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}>Event service: <strong style={{color:"#111"}}>{comboEventService?`+${formatMoney(comboEventServiceFee)}`:"No"}</strong></div>
+                      <div style={{background:"#fafafa",border:"1px solid #eee",borderRadius:10,padding:8,fontSize:11,color:"#666"}}>Due for booking: <strong style={{color:"#111"}}>{formatMoney(activeComboTotal)}</strong></div>
                     </div>
                     <button onClick={addComboToCart}
                       style={{width:"100%",padding:"11px",background:"#111",color:"#fff",border:"none",borderRadius:10,fontSize:11,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",cursor:"pointer",marginBottom:7}}>
@@ -1327,9 +1932,60 @@ export default function App() {
                 </div>
               </div>
             )}
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" style={{position:"absolute",right:18,bottom:56,zIndex:90,textDecoration:"none"}}>
-              <span style={{width:86,height:86,display:"flex",alignItems:"center",justifyContent:"center",background:"transparent",borderRadius:0,boxShadow:"none"}}>
-                <svg viewBox="0 0 24 24" width="66" height="66" fill="none" stroke="#25D366" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            {reviewPopupOpen&&(
+              <div onClick={()=>setReviewPopupOpen(false)} style={{position:"absolute",inset:0,zIndex:122,background:"rgba(0,0,0,.62)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}}>
+                <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:332,background:"#fff",borderRadius:16,overflowY:"auto",maxHeight:"92%",boxShadow:"0 20px 50px rgba(0,0,0,.35)"}}>
+                  <div style={{padding:"14px 14px 10px",borderBottom:"1px solid #eee",position:"relative"}}>
+                    <div style={{fontFamily:"Georgia,serif",fontSize:23,fontWeight:900,color:"#111",marginBottom:4}}>Add Your Review</div>
+                    <div style={{fontSize:11,color:"#777",lineHeight:1.5,paddingRight:28}}>Your review is submitted for approval before it appears on the website.</div>
+                    <button onClick={()=>setReviewPopupOpen(false)} style={{position:"absolute",top:9,right:10,width:30,height:30,borderRadius:"50%",border:"none",background:"rgba(0,0,0,.75)",color:"#fff",cursor:"pointer",fontSize:16,lineHeight:1}}>x</button>
+                  </div>
+                  <form onSubmit={submitCustomerReview} style={{display:"grid",gap:9,padding:14}}>
+                    <input
+                      type="text"
+                      value={reviewForm.name}
+                      onChange={e=>updReview("name",e.target.value)}
+                      placeholder="Your name"
+                      style={{width:"100%",padding:"10px 11px",border:"1px solid #eee",borderRadius:10,fontSize:12,background:"#fafafa",color:"#111",boxSizing:"border-box"}}
+                    />
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                      <select
+                        value={reviewForm.rating}
+                        onChange={e=>updReview("rating",e.target.value)}
+                        style={{width:"100%",padding:"10px 11px",border:"1px solid #eee",borderRadius:10,fontSize:12,background:"#fafafa",color:"#111"}}
+                      >
+                        {[5,4,3,2,1].map(rating=><option key={rating} value={rating}>{rating} star{rating>1?"s":""}</option>)}
+                      </select>
+                      <select
+                        value={reviewForm.productRented}
+                        onChange={e=>updReview("productRented",e.target.value)}
+                        style={{width:"100%",padding:"10px 11px",border:"1px solid #eee",borderRadius:10,fontSize:12,background:"#fafafa",color:"#111"}}
+                      >
+                        {PRODUCTS.map(product=><option key={product.name} value={product.name}>{product.name}</option>)}
+                        {COMBO_PACKAGES.map(combo=><option key={combo.title} value={combo.title}>{combo.title}</option>)}
+                      </select>
+                    </div>
+                    <textarea
+                      value={reviewForm.message}
+                      onChange={e=>updReview("message",e.target.value)}
+                      placeholder="Tell us how your booking went"
+                      rows={4}
+                      style={{width:"100%",padding:"10px 11px",border:"1px solid #eee",borderRadius:10,fontSize:12,background:"#fafafa",color:"#111",resize:"vertical",fontFamily:"-apple-system,sans-serif",boxSizing:"border-box"}}
+                    />
+                    <button
+                      type="submit"
+                      disabled={reviewSubmitting}
+                      style={{width:"100%",padding:"11px",background:"#111",color:"#fff",border:"none",borderRadius:10,fontSize:11,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",cursor:reviewSubmitting?"default":"pointer",opacity:reviewSubmitting?0.75:1}}
+                    >
+                      {reviewSubmitting ? "Sending..." : "Send Review"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" style={{position:"absolute",right:20,bottom:28,zIndex:200,textDecoration:"none"}}>
+              <span style={{width:52,height:52,borderRadius:"50%",background:"#25D366",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 4px 20px rgba(37,211,102,.4)",animation:"waPulse 3s ease-in-out infinite"}}>
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M20 11.5a8.2 8.2 0 0 1-12.4 7l-3.1.9.9-3A8.2 8.2 0 1 1 20 11.5Z"/>
                   <path d="M9 8.9c.2-.5.4-.5.7-.5h.6c.2 0 .4 0 .6.5l.4 1c.1.3 0 .6-.2.8l-.4.6c.2.7 1 1.8 2.4 2.4l.6-.4c.2-.1.6-.2.8 0l1 .4c.5.2.5.4.5.6v.6c0 .3 0 .5-.5.7-.7.2-1.6.2-2.6-.3-1.1-.5-2.2-1.4-3-2.4-.7-.8-1.3-1.8-1.5-2.7-.2-.8-.1-1.4.1-1.9Z"/>
                 </svg>
@@ -1354,6 +2010,47 @@ export default function App() {
                 Cart {cart.length>0&&<span style={{background:"#111",color:"#fff",borderRadius:99,fontSize:10,fontWeight:700,padding:"1px 6px",marginLeft:3}}>{cart.length}</span>}
               </span>
             </div>
+            {howItWorksPopupOpen&&(
+              <div
+                onClick={()=>setHowItWorksPopupOpen(false)}
+                style={{position:"absolute",inset:0,zIndex:119,background:"rgba(0,0,0,.55)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}}
+              >
+                <div
+                  onClick={e=>e.stopPropagation()}
+                  style={{width:"100%",maxWidth:344,background:"#fff",borderRadius:18,overflow:"hidden",boxShadow:"0 22px 55px rgba(0,0,0,.35)"}}
+                >
+                  <div style={{padding:"15px 15px 11px",borderBottom:"1px solid #efefef",position:"relative"}}>
+                    <div style={{fontSize:9,letterSpacing:".28em",textTransform:"uppercase",color:"#b0b0b0",marginBottom:4}}>How It Works</div>
+                    <div style={{fontFamily:"Georgia,serif",fontSize:24,fontWeight:900,color:"#111",marginBottom:5}}>What happens next</div>
+                    <div style={{fontSize:11,color:"#6d6d6d",lineHeight:1.6,paddingRight:28}}>
+                      Your setup is in the cart. Review it, edit products if needed, then go ahead and book when you are ready.
+                    </div>
+                    <button
+                      onClick={()=>setHowItWorksPopupOpen(false)}
+                      style={{position:"absolute",top:10,right:10,width:30,height:30,borderRadius:"50%",border:"none",background:"rgba(0,0,0,.8)",color:"#fff",cursor:"pointer",fontSize:16,lineHeight:1}}
+                    >
+                      x
+                    </button>
+                  </div>
+                  <div style={{padding:14,display:"grid",gap:10}}>
+                    {HOW_IT_WORKS.map((item)=>(
+                      <article key={item.step} style={{display:"flex",gap:10,background:"#fafafa",border:"1px solid #ececec",borderRadius:12,padding:"11px 10px"}}>
+                        <div style={{width:34,height:34,borderRadius:999,background:"#111",color:"#fff",display:"grid",placeItems:"center",fontWeight:900,fontSize:12,flexShrink:0}}>
+                          {item.step}
+                        </div>
+                        <div>
+                          <div style={{fontSize:12,fontWeight:800,color:"#111",marginBottom:3}}>{item.title}</div>
+                          <div style={{fontSize:11,color:"#666",lineHeight:1.6}}>{item.text}</div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                  <div style={{padding:"0 14px 15px",fontSize:11,color:"#8a8a8a",lineHeight:1.5}}>
+                    Once your cart looks right, continue to booking and leave your preferred date, time, and delivery details.
+                  </div>
+                </div>
+              </div>
+            )}
             <div style={{flex:1,overflowY:"auto",padding:"12px 14px",marginTop:"calc(env(safe-area-inset-top, 0px) + 56px)"}}>
               {cart.length===0
                 ?<div style={{textAlign:"center",padding:"3rem 1rem"}}>
@@ -1380,17 +2077,20 @@ export default function App() {
                         }}
                         style={{maxWidth:"100%",maxHeight:"100%",objectFit:"contain"}}
                       />
-                      <span style={{position:"absolute",right:-5,bottom:-5,background:"#111",color:"#fff",borderRadius:999,padding:"1px 5px",fontSize:9,fontWeight:800,lineHeight:1.3}}>+{item.isCombo ? COMBO_HOURS_STEP : 4}h</span>
+                      <span style={{position:"absolute",right:-5,bottom:-5,background:"#111",color:"#fff",borderRadius:999,padding:"1px 5px",fontSize:9,fontWeight:800,lineHeight:1.3}}>+{item.isCombo ? COMBO_HOURS_STEP : getProductHourStep(item)}h</span>
                     </button>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:700,fontSize:13,color:"#111"}}>{item.name}</div>
                       <div style={{fontSize:11,color:"#bbb",marginTop:1}}>{item.hours}h rental {"\u2022"} Qty {item.quantity || 1}</div>
                       <div style={{fontSize:10,color:"#9a9a9a",marginTop:1}}>Tap image to edit hours (+/-)</div>
-                      <div style={{fontSize:10,color:"#ddd"}}>Deposit: R{item.deposit.toLocaleString()}</div>
-                      {item.isCombo&&(
+                      <div style={{fontSize:10,color:"#ddd"}}>Security hold: {getDepositCopy(item.deposit)}</div>
+                      {(item.isCombo || item.flavour || item.flavours?.length > 0)&&(
                         <div style={{fontSize:10,color:"#aaa",marginTop:2}}>
                           <div>Flavour: {item.flavours?.length ? item.flavours.join(", ") : (item.flavour || "Any flavour")}</div>
-                          {item.weedBag&&<div>Weed bag: +R{comboAddOnPrice}</div>}
+                          {item.comboEventService&&<div>Event service: +{formatMoney(Number(item.eventServiceFee || 0))}</div>}
+                          {item.eventPipes&&<div>Event pipes: {item.eventPipes}</div>}
+                          {item.eventPipeTypes&&<div>Pipe types: {item.eventPipeTypes}</div>}
+                          {item.eventFlavours&&<div>Event flavours: {item.eventFlavours}</div>}
                         </div>
                       )}
                       <div style={{display:"flex",alignItems:"center",gap:8,marginTop:6}}>
@@ -1434,14 +2134,18 @@ export default function App() {
                 <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#bbb",marginBottom:2}}>
                   <span>Rental</span><span>R{cartRental.toLocaleString()}</span>
                 </div>
-                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#bbb",marginBottom:8}}>
-                  <span>Deposits (refundable)</span><span>R{cartDeposit.toLocaleString()}</span>
-                </div>
+                {hasCartDeposit&&(
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#bbb",marginBottom:8}}>
+                    <span>Security holds (refundable)</span><span>{formatMoney(cartDeposit)}</span>
+                  </div>
+                )}
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",borderTop:"2px solid #111",paddingTop:9,marginBottom:3}}>
                   <span style={{fontWeight:800,fontSize:13,textTransform:"uppercase",letterSpacing:".05em",color:"#111"}}>Total</span>
-                  <span style={{fontWeight:900,fontSize:24,color:"#111"}}>R{cartTotal.toLocaleString()}</span>
+                  <span style={{fontWeight:900,fontSize:24,color:"#111"}}>{formatMoney(cartTotal)}</span>
                 </div>
-                <div style={{fontSize:10,color:"#ccc",fontStyle:"italic",marginBottom:12}}>R{cartDeposit.toLocaleString()} refunded on return</div>
+                <div style={{fontSize:10,color:"#ccc",fontStyle:"italic",marginBottom:12}}>
+                  {hasCartDeposit ? `${formatMoney(cartDeposit)} security hold refunded on safe return` : "No deposit is required on the items currently in your cart"}
+                </div>
                 <button onClick={()=>{
                   setPage("checkout");
                   setStep(1);
@@ -1501,9 +2205,9 @@ export default function App() {
                         <span>{item.name} - {item.hours}h x{item.quantity || 1}</span>
                         <span style={{fontWeight:700,color:"#111"}}>R{item.totalNow.toLocaleString()}</span>
                       </div>
-                      {item.isCombo&&(
+                      {(item.isCombo || item.flavour || item.flavours?.length > 0)&&(
                         <div style={{fontSize:10,color:"#aaa",marginTop:1}}>
-                          Flavour: {item.flavours?.length ? item.flavours.join(", ") : (item.flavour || "Any flavour")}{item.weedBag?` | Weed bag +R${comboAddOnPrice}`:""}
+                          Flavour: {item.flavour || "Any flavour"}{item.comboEventService?` | Event service +${formatMoney(Number(item.eventServiceFee || 0))}`:""}
                         </div>
                       )}
                     </div>
@@ -1563,7 +2267,7 @@ export default function App() {
                       Leave your booking request and we will contact you to confirm availability.
                     </div>
                     <div style={{fontSize:11,color:"#8d6a2f",marginBottom:10}}>
-                      Booking slots are available from <strong>16 March 2026</strong> onward.
+                      Booking slots are open from <strong>{minBookingDate}</strong> onward.
                     </div>
                     <div style={{textAlign:"left",marginBottom:10}}>
                       <DeliveryField
@@ -1582,9 +2286,9 @@ export default function App() {
                     </div>
                     <button onClick={submitBookingRequest} disabled={bookingSubmitting || bookingDateLocked}
                       style={{width:"100%",padding:"13px",background:(bookingSubmitting||bookingDateLocked)?"#b7b7b7":"#7a4a00",color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:(bookingSubmitting||bookingDateLocked)?"not-allowed":"pointer"}}>
-                      {bookingSubmitting ? "Sending..." : bookingDateLocked ? "Available from 16 Mar" : "Book This Order"}
+                      {bookingSubmitting ? "Sending..." : bookingDateLocked ? `Available from ${minBookingDate}` : "Book This Order"}
                     </button>
-                    <div style={{fontSize:10,color:"#9d7b43",marginTop:9}}>No payment is required now. We will contact you via phone/WhatsApp.</div>
+                    <div style={{fontSize:10,color:"#9d7b43",marginTop:9}}>No payment is required now. We will contact you directly to confirm the booking.</div>
                   </div>
                 )
               )}
@@ -1608,7 +2312,7 @@ export default function App() {
                   </div>
                   <div style={{background:"#f8f8f8",borderRadius:9,padding:".75rem",fontSize:11,color:"#aaa",marginBottom:16,textAlign:"left"}}>
                     <div style={{marginBottom:3}}>Free delivery & collection included</div>
-                    <div>R{cartDeposit.toLocaleString()} deposit refunded on safe return</div>
+                    <div>{hasCartDeposit ? `${formatMoney(cartDeposit)} security hold refunded on safe return` : "No deposit required for the current booking mix"}</div>
                   </div>
                   <button onClick={()=>{setPage("home");setStep(1);setForm(createInitialCheckoutForm());setTimeout(()=>mainRef.current?.scrollTo({top:0,behavior:"smooth"}),60);}}
                     style={{padding:"11px 26px",background:"#111",color:"#fff",border:"none",borderRadius:11,fontSize:12,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",cursor:"pointer"}}>
@@ -1631,6 +2335,12 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
+
+
 
 
 

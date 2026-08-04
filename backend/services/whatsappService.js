@@ -21,7 +21,7 @@ function resolveNotifyNumber() {
   const configured =
     process.env.BUSINESS_NOTIFICATION_NUMBER ||
     process.env.WHATSAPP_NOTIFY_TO ||
-    "0749428500";
+    "27845642769";
 
   return normalizePhoneNumber(configured);
 }
@@ -160,3 +160,4 @@ export async function sendWhatsAppBookingNotification(booking) {
   const bodyText = formatWhatsAppBookingMessage(booking);
   return sendWhatsAppText(bodyText);
 }
+

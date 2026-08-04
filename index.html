@@ -23,15 +23,31 @@
     />
     <meta name="twitter:image" content="/cloud9-hookah-logo.svg" />
     <link rel="icon" type="image/svg+xml" href="/cloud9-hookah-logo.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <title>Cloud 9 Hookah</title>
     <style>
+      @keyframes breathe {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.08); opacity: 1; }
+      }
+
+      @keyframes waPulse {
+        0%, 100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
+        50% { box-shadow: 0 4px 36px rgba(37, 211, 102, 0.7), 0 0 0 8px rgba(37, 211, 102, 0.07); }
+      }
+
       html, body, #root {
         margin: 0;
         width: 100%;
         height: 100%;
       }
       body {
-        font-family: Arial, sans-serif;
+        font-family: "Inter", Arial, sans-serif;
         background: #111;
       }
     </style>

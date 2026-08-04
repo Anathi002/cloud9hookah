@@ -44,6 +44,37 @@ function normalizeBookingTime(value) {
   return `${match[1]}:${match[2]}`;
 }
 
+function formatLeadCaptureMessage(lead) {
+  return [
+    "New Lead Capture",
+    "",
+    `Name: ${lead.name}`,
+    `Email: ${lead.email}`,
+    lead.phone ? `Phone: ${lead.phone}` : null,
+    lead.interest ? `Interest: ${lead.interest}` : null,
+    lead.source ? `Source: ${lead.source}` : null,
+    lead.page ? `Page: ${lead.page}` : null,
+    lead.notes ? `Notes: ${lead.notes}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function formatReviewMessage(review) {
+  return [
+    "New Website Review",
+    "",
+    `Name: ${review.name}`,
+    `Rating: ${review.rating}/5`,
+    review.productRented ? `Product: ${review.productRented}` : null,
+    "",
+    "Review:",
+    review.message,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export async function createBookingRequest(req, res, next) {
   try {
     const { customer = {}, items = [], totalAmount = 0, source = "prelaunch-website" } = req.body || {};
@@ -136,6 +167,123 @@ export async function createBookingRequest(req, res, next) {
       requestedDate: bookingPayload.requestedDate,
       requestedTime: bookingPayload.requestedTime,
       message: "Booking request captured. Team will contact customer.",
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function captureLead(req, res, next) {
+  try {
+    const { name, email, phone, interest, notes, source, page } = req.body || {};
+
+    const cleanName = String(name || "").trim();
+    const cleanEmail = String(email || "").trim().toLowerCase();
+    const cleanPhone = String(phone || "").trim();
+    const cleanInterest = String(interest || "").trim();
+    const cleanNotes = String(notes || "").trim();
+    const cleanSource = String(source || "website-lead").trim();
+    const cleanPage = String(page || "").trim() || null;
+
+    if (!cleanName || !cleanEmail) {
+      return res.status(400).json({ error: "Name and email are required" });
+    }
+
+    const metaJson = {
+      name: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone || null,
+      interest: cleanInterest || null,
+      notes: cleanNotes || null,
+      source: cleanSource,
+      page: cleanPage,
+    };
+
+    await pool.query(
+      `INSERT INTO engagement_events
+        (session_id, event_name, page, referrer, user_agent, ip_address, meta)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)`,
+      [
+        null,
+        "lead_captured",
+        cleanPage,
+        req.get("referer") || null,
+        req.get("user-agent") || null,
+        cleanIp(req),
+        JSON.stringify(metaJson),
+      ]
+    );
+
+    void sendBusinessEmail({
+      subject: `Cloud 9 Lead ${cleanName}`,
+      text: formatLeadCaptureMessage({
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        interest: cleanInterest,
+        notes: cleanNotes,
+        source: cleanSource,
+        page: cleanPage,
+      }),
+    }).catch((reason) => {
+      console.error("Lead capture email notification failed:", {
+        message: reason?.message || String(reason),
+        code: reason?.code || null,
+        responseCode: reason?.responseCode || null,
+      });
+    });
+
+    return res.status(202).json({
+      ok: true,
+      message: "Lead captured successfully",
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function submitReview(req, res, next) {
+  try {
+    const { name, rating, message, productRented, source = "website" } = req.body || {};
+    const cleanName = String(name || "").trim();
+    const cleanMessage = String(message || "").trim();
+    const cleanProduct = String(productRented || "").trim() || null;
+    const cleanSource = String(source || "website").trim().slice(0, 80);
+    const cleanRating = Math.trunc(toSafeNumber(rating, 0));
+
+    if (!cleanName || !cleanMessage || cleanRating < 1 || cleanRating > 5) {
+      return res.status(400).json({ error: "Name, rating from 1 to 5, and review message are required" });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO customer_reviews
+        (customer_name, rating, message, product_rented, source, status)
+       VALUES ($1, $2, $3, $4, $5, 'PENDING')
+       RETURNING id, created_at`,
+      [cleanName, cleanRating, cleanMessage, cleanProduct, cleanSource]
+    );
+
+    void sendBusinessEmail({
+      subject: `Cloud 9 Review ${cleanRating}/5`,
+      text: formatReviewMessage({
+        name: cleanName,
+        rating: cleanRating,
+        message: cleanMessage,
+        productRented: cleanProduct,
+      }),
+    }).catch((reason) => {
+      console.error("Review email notification failed:", {
+        message: reason?.message || String(reason),
+        code: reason?.code || null,
+        responseCode: reason?.responseCode || null,
+      });
+    });
+
+    return res.status(201).json({
+      ok: true,
+      reviewId: result.rows[0].id,
+      createdAt: result.rows[0].created_at,
+      message: "Review received and pending approval",
     });
   } catch (err) {
     return next(err);
