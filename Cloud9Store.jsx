@@ -91,7 +91,7 @@ const COMBO_PACKAGES = [
     subtitle: "For elevated hosting with extra flavour and longer-lasting prep.",
     lines: [
       "2 Hookah pipes",
-      "6 prepared heads",
+      "8 prepared heads",
       "2 flavour packs",
       "8 coconut charcoal pieces",
       "6 mouthpieces",
@@ -108,7 +108,7 @@ const COMBO_PACKAGES = [
     subtitle: "For premium events that need presence, scale, and convenience.",
     lines: [
       "3 Hookah pipes",
-      "8 prepared heads",
+      "10 prepared heads",
       "3 flavour packs",
       "12 coconut charcoal pieces",
       "8 mouthpieces",
@@ -1291,6 +1291,11 @@ export default function App() {
       background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)",
       fontFamily:"-apple-system,BlinkMacSystemFont,sans-serif"}}>
       <style>{`
+        input,
+        textarea,
+        select {
+          font-size: 16px !important;
+        }
         @keyframes cloud9LogoRollIn {
           0% {
             transform: translateX(170px) rotate(26deg);
@@ -2077,7 +2082,7 @@ export default function App() {
                         }}
                         style={{maxWidth:"100%",maxHeight:"100%",objectFit:"contain"}}
                       />
-                      <span style={{position:"absolute",right:-5,bottom:-5,background:"#111",color:"#fff",borderRadius:999,padding:"1px 5px",fontSize:9,fontWeight:800,lineHeight:1.3}}>+{item.isCombo ? COMBO_HOURS_STEP : getProductHourStep(item)}h</span>
+                      <span style={{position:"absolute",right:-5,bottom:-5,background:"#111",color:"#fff",borderRadius:999,padding:"1px 5px",fontSize:9,fontWeight:800,lineHeight:1.3}}>{item.hours}h</span>
                     </button>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontWeight:700,fontSize:13,color:"#111"}}>{item.name}</div>
